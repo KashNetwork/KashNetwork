@@ -1,24 +1,23 @@
 node_modules/
+.next/
+out/
 dist/
 build/
-.turbo/
 coverage/
-.pglite/
-apps/api/.pglite/
-*.tsbuildinfo
-# stray tsc output next to sources
-apps/web/src/**/*.js
+.turbo/
 
 .env
 .env.*
 !.env.example
 
+.pglite/
+*.tsbuildinfo
 *.log
 *.zip
 .lovable-reference/
-.DS_Store
 .vercel
-.supabase/
+.DS_Store
+next-env.d.ts
 
 # local supabase
 supabase/.branches

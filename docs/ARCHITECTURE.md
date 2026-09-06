@@ -57,11 +57,11 @@ Money flow:
 | Concern | Choice |
 |---|---|
 | Language | TypeScript |
-| API | Express (Vercel serverless functions) |
-| DB | Postgres. **Local dev = PGlite** (embedded, no Docker, persisted to `apps/api/.pglite`). Staging/prod = a hosted Postgres via `DATABASE_URL` (Supabase Postgres, Neon, RDS — the app only needs a connection string, not the Supabase platform). |
-| DB access | raw SQL behind a `Repo` port (`SqlRepo`). The frontend never connects to Postgres — everything goes through the API, so no PostgREST / `supabase-js`. |
-| Auth | custom — own sessions (hashed opaque tokens) + scrypt password hashing. Not Supabase Auth (passwordless leads fight it). |
-| Migrations | Plain SQL in `supabase/migrations`, applied by a small runner on boot (local) or as a deploy step (`pnpm --filter @kash/api db migrate` against `DATABASE_URL`). |
+| Framework | **Next.js (App Router)** — one app: SSR marketing pages, client dashboard, `app/api/*` route handlers, Vercel Cron. Deployed to Vercel. |
+| DB | Postgres via `DATABASE_URL` (Supabase Postgres / Neon / RDS — connection string only, not the Supabase platform). **Local dev = PGlite** (embedded, no Docker, `./.pglite`) when `DATABASE_URL` is unset. `pg` + `@electric-sql/pglite` are `serverExternalPackages`. |
+| DB access | raw SQL behind a `Repo` port (`SqlRepo`). The frontend never connects to Postgres — everything goes through route handlers, so no PostgREST / `supabase-js`. |
+| Auth | custom — own sessions (hashed opaque cookie tokens) + scrypt password hashing. Not Supabase Auth (passwordless leads fight it). Cookie set/read via `next/headers`. |
+| Migrations | Plain SQL in `supabase/migrations`, applied by a runner on first DB use (local) or `pnpm db:migrate` against `DATABASE_URL` (deploy step). Shipped to the serverless bundle via `outputFileTracingIncludes`. |
 | Scheduled jobs | Vercel Cron → dedicated HTTP endpoints (no long-lived intervals — serverless kills them) |
 | Transactional / marketing email | Resend (from `harley@kash.network`) + Google SMTP for the Gmail-hosted addresses |
 | Inbound email | provider inbound-parse webhook → `/api/webhooks/email-inbound` (candidate: Resend inbound, Cloudflare Email Routing, or Gmail push — TBD, see questions) |

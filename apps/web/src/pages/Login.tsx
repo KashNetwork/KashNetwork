@@ -28,7 +28,7 @@ export function Login() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="mb-6 text-center text-xl font-extrabold text-ink">Log in to Kash Network</h1>
+      <h1 className="mb-6 text-center text-xl font-extrabold text-foreground">Log in to Kash Network</h1>
       <Card>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Email">

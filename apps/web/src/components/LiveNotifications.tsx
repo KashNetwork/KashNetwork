@@ -58,11 +58,11 @@ export function LiveNotifications({ location }: { location: 'landing' | 'sales' 
     <div className="pointer-events-none fixed bottom-4 left-4 z-50 max-w-[320px]">
       <div className="animate-[fadeIn_.3s_ease] rounded-xl bg-white p-4 shadow-lg ring-1 ring-slate-200">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
             ✦
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-semibold text-ink">{current.label}</div>
+            <div className="text-sm font-semibold text-foreground">{current.label}</div>
             <div className="truncate text-sm text-slate-600">{current.message}</div>
             {current.time && <div className="mt-0.5 text-xs text-slate-400">{current.time}</div>}
           </div>

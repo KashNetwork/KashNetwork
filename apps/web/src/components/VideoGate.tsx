@@ -95,7 +95,7 @@ export function VideoGate({
       {gateVisible && !unlocked && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6">
           <form onSubmit={submit} className="w-full max-w-sm rounded-xl bg-white p-6 text-center">
-            <h3 className="text-lg font-bold text-ink">Want to see what happened next?</h3>
+            <h3 className="text-lg font-bold text-foreground">Want to see what happened next?</h3>
             <p className="mt-1.5 text-sm text-slate-600">
               Enter your email to continue watching and unlock your demo account…
             </p>

@@ -1,6 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import { Banner, Button, Card, Field, Input, StatCard } from '../components/ui';
-import { SalesPage } from '../pages/SalesPage';
+import SalesPage from '../pages/SalesPage';
 import { api, ApiError, type AdminUserRow } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
@@ -38,7 +38,7 @@ function HarleysStory() {
   if (me?.freeVariant === 'downgraded') {
     return (
       <Card className="text-center">
-        <h2 className="text-xl font-bold text-ink">Reactivate your account</h2>
+        <h2 className="text-xl font-bold text-foreground">Reactivate your account</h2>
         <p className="mx-auto mt-2 max-w-prose text-sm text-slate-600">
           Your paid membership has ended. Reactivate for $47/month to regain your
           dashboard and affiliate link.
@@ -109,7 +109,7 @@ function CommissionsPanel() {
 function BuyTrafficPanel() {
   return (
     <div className="space-y-5">
-      <h2 className="text-2xl font-extrabold tracking-tight text-ink">GET STARTED</h2>
+      <h2 className="text-2xl font-extrabold tracking-tight text-foreground">GET STARTED</h2>
       <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-slate-200">
         {/* TODO(client): embedded Buy Traffic video */}
         <div className="flex h-full items-center justify-center text-sm text-slate-400">
@@ -162,7 +162,7 @@ function SupportPanel() {
             rows={5}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-border"
           />
         </Field>
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -264,7 +264,7 @@ function ProfilePanel() {
 function CancelPanel() {
   return (
     <Card>
-      <h2 className="text-base font-semibold text-ink">Cancel your subscription?</h2>
+      <h2 className="text-base font-semibold text-foreground">Cancel your subscription?</h2>
       <p className="mt-2 text-sm text-slate-600">
         You'll keep paid access until the end of the current billing period. After that your
         account downgrades to free, your affiliate link is removed, and future commissions and
@@ -319,7 +319,7 @@ function AdminCustomers() {
             key={f}
             onClick={() => setFilter(f)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-              filter === f ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'
+              filter === f ? 'bg-primary text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'
             }`}
           >
             {f.replace('_', ' ')}

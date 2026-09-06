@@ -21,11 +21,11 @@ export function AppShell() {
       {/* sidebar (desktop) / topbar (mobile) */}
       <aside className="border-b border-slate-200 bg-white lg:w-60 lg:shrink-0 lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between px-5 py-4">
-          <span className="text-sm font-extrabold uppercase tracking-widest text-brand-600">
+          <span className="text-sm font-extrabold uppercase tracking-widest text-primary">
             Kash
           </span>
           {showLogout && (
-            <button onClick={() => void logout()} className="text-xs text-slate-500 hover:text-ink">
+            <button onClick={() => void logout()} className="text-xs text-slate-500 hover:text-foreground">
               Log out
             </button>
           )}
@@ -37,7 +37,7 @@ export function AppShell() {
               onClick={() => setActive(t)}
               className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
                 t === current
-                  ? 'bg-brand-50 text-brand-700'
+                  ? 'bg-accent text-primary'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -49,7 +49,7 @@ export function AppShell() {
 
       <main className="flex-1 bg-slate-50 px-4 py-6 sm:px-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="mb-5 text-lg font-bold text-ink">{TAB_LABELS[current]}</h1>
+          <h1 className="mb-5 text-lg font-bold text-foreground">{TAB_LABELS[current]}</h1>
           <Panel />
         </div>
       </main>

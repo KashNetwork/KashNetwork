@@ -41,7 +41,7 @@ export function ConfirmEmail() {
       <Card className="text-center">
         {status === 'working' && <p className="text-sm text-slate-500">Confirming…</p>}
         {status === 'ok' && (
-          <p className="text-sm text-ink">Your email is now {detail}. You can close this tab.</p>
+          <p className="text-sm text-foreground">Your email is now {detail}. You can close this tab.</p>
         )}
         {status === 'error' && <p className="text-sm text-red-600">{detail}</p>}
       </Card>

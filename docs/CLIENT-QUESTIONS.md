@@ -127,3 +127,9 @@ Grouped by how much they block. Send this before/alongside Milestone 1.
 - [ ] Vercel — team/project for deployment
 - [ ] Video host — account + IDs
 - [ ] Email verification service — account/key
+- [ ] **Real image files** — the Lovable frontend design was brought in but its
+      images were Lovable-CDN-only. Placeholders are in `apps/web/src/assets/*.asset.json`.
+      Need: Harley/founder photo, results screenshots (x2), 3 testimonial photos,
+      the yellow-highlighter graphic. Replace each file's `url`.
+- [ ] Supabase Postgres connection string (Project Settings → Database → URI)
+      for the live `DATABASE_URL`.

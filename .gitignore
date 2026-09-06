@@ -1,0 +1,25 @@
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+.pglite/
+apps/api/.pglite/
+*.tsbuildinfo
+# stray tsc output next to sources
+apps/web/src/**/*.js
+
+.env
+.env.*
+!.env.example
+
+*.log
+*.zip
+.lovable-reference/
+.DS_Store
+.vercel
+.supabase/
+
+# local supabase
+supabase/.branches
+supabase/.temp

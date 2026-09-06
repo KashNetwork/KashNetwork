@@ -21,7 +21,15 @@ export async function makeSqlClient(opts: {
 }): Promise<SqlClient> {
   if (opts.databaseUrl) {
     const { default: pg } = await import('pg');
-    const pool = new pg.Pool({ connectionString: opts.databaseUrl, max: 5 });
+    const local = /@(localhost|127\.0\.0\.1|host\.docker\.internal)[:/]/.test(opts.databaseUrl);
+    const pool = new pg.Pool({
+      connectionString: opts.databaseUrl,
+      max: Number(process.env.PG_POOL_MAX ?? 5),
+      // managed Postgres (Supabase pooler, Neon, RDS) requires TLS; their certs
+      // aren't always in Node's default CA bundle, so don't verify the chain.
+      ssl: local ? undefined : { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10_000,
+    });
     return {
       async query<T = Record<string, unknown>>(text: string, params?: unknown[]) {
         const res = await pool.query(text, params as unknown[]);

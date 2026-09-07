@@ -21,8 +21,8 @@ const PLACEHOLDER_VIDEO =
 
 const AVATARS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
 
-export default function Landing() {
-  const ref = useRefTracking('landing');
+export default function Landing({ initialRef }: { initialRef?: string }) {
+  const ref = useRefTracking('landing', initialRef);
   const [revealed, setRevealed] = useState(false);
   const videoRef = useRef<HTMLDivElement>(null);
 

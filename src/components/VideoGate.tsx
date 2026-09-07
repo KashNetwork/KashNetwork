@@ -28,6 +28,15 @@ export function VideoGate({
   const { me, setMe } = useAuth();
   const alreadyLead = Boolean(me);
 
+  // skip buttons: on in dev, and on the deployed site while a placeholder video
+  // is in use (any host that isn't the real domain, or ?preview in the URL).
+  const [showSkip, setShowSkip] = useState(process.env.NODE_ENV !== 'production');
+  useEffect(() => {
+    const h = window.location.hostname;
+    const real = h === 'kash.network' || h === 'www.kash.network';
+    if (!real || new URLSearchParams(window.location.search).has('preview')) setShowSkip(true);
+  }, []);
+
   const [unlocked, setUnlocked] = useState(alreadyLead);
   const [gateVisible, setGateVisible] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -118,9 +127,9 @@ export function VideoGate({
         </div>
       )}
 
-      {process.env.NODE_ENV !== 'production' && !unlocked && (
+      {showSkip && !unlocked && (
         <div className="absolute right-2 top-2 flex gap-1 rounded bg-white/90 p-1 text-xs shadow">
-          <span className="px-1 text-slate-400">dev:</span>
+          <span className="px-1 text-slate-400">preview:</span>
           <button
             className="rounded bg-slate-200 px-1.5 hover:bg-slate-300"
             onClick={() => seekTo(VIDEO_GATE.emailGateAt - 3)}
@@ -129,9 +138,9 @@ export function VideoGate({
           </button>
         </div>
       )}
-      {process.env.NODE_ENV !== 'production' && unlocked && !revealed && (
+      {showSkip && unlocked && !revealed && (
         <div className="absolute right-2 top-2 flex gap-1 rounded bg-white/90 p-1 text-xs shadow">
-          <span className="px-1 text-slate-400">dev:</span>
+          <span className="px-1 text-slate-400">preview:</span>
           <button
             className="rounded bg-slate-200 px-1.5 hover:bg-slate-300"
             onClick={() => seekTo(VIDEO_GATE.contentRevealAt - 3)}

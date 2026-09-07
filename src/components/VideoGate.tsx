@@ -85,7 +85,7 @@ export function VideoGate({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-black ring-1 ring-slate-200">
+    <div className="relative overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
       <video
         ref={videoRef}
         src={src}

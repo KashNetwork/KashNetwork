@@ -1,6 +1,9 @@
-// EmailProvider port (Resend + Google SMTP + email verification).
+// EmailProvider port (Resend). Sending domains are subdomains of kash.network:
+//   harley@go.kash.network   — outbound nurture sequence
+//   support@app.kash.network — support + AI replies
+// The concrete addresses live in config (EMAIL_FROM_HARLEY / EMAIL_FROM_SUPPORT).
 
-export type FromAddress = 'harley@kash.network' | 'support@kash.network';
+export type FromAddress = string;
 
 export interface SendEmailInput {
   from: FromAddress;

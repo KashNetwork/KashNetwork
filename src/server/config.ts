@@ -32,8 +32,10 @@ export const config = {
 
   resend: {
     apiKey: env.RESEND_API_KEY ?? '',
-    fromHarley: env.EMAIL_FROM_HARLEY ?? 'harley@kash.network',
-    fromSupport: env.EMAIL_FROM_SUPPORT ?? 'support@kash.network',
+    fromHarley: env.EMAIL_FROM_HARLEY ?? 'Harley <harley@go.kash.network>',
+    fromSupport: env.EMAIL_FROM_SUPPORT ?? 'Kash Support <support@app.kash.network>',
+    // where the support form + admin alerts are delivered (a real inbox)
+    supportInbox: env.SUPPORT_INBOX ?? 'support@app.kash.network',
     get enabled() {
       return Boolean(this.apiKey);
     },

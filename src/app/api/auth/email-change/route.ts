@@ -35,7 +35,7 @@ export const POST = route(async (req) => {
   });
   const link = `${config.publicSiteUrl.replace(/\/$/, '')}/app/confirm-email?token=${token}`;
   await getEmailProvider().send({
-    from: 'support@kash.network',
+    from: config.resend.fromSupport,
     to: newEmail,
     subject: 'Confirm your new email address',
     text: `Confirm your new Kash Network email: ${link}`,

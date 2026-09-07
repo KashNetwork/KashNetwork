@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { getEmailProvider } from '@/server/adapters';
 import { requireAuth } from '@/server/auth/guard';
+import { config } from '@/server/config';
 import { getDb } from '@/server/db';
 import { badRequest, ok, readJson, route } from '@/server/http';
 
@@ -29,8 +30,8 @@ export const POST = route(async (req) => {
   });
 
   await getEmailProvider().send({
-    from: 'support@kash.network',
-    to: 'support@kash.network',
+    from: config.resend.fromSupport,
+    to: config.resend.supportInbox,
     replyTo: profile.email,
     subject: `[Support] ${parsed.data.subject ?? 'New message'} — ${profile.email}`,
     text: parsed.data.message,

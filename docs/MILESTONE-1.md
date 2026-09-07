@@ -1,87 +1,72 @@
 # Milestone 1 — Application Foundation & User System
 
-Status: **complete (foundation)**. Runs fully locally with no cloud accounts.
-Data-heavy dashboard panels are structured shells that get wired to live data in
-Milestone 2.
+Status: **complete + deployed live.**
 
-## How to run it
+- **Live:** https://kash-network.vercel.app
+- Repo: https://github.com/KashNetwork/KashNetwork (`main`)
+- One Next.js 15 app. Marketing pages SSR'd; dashboard client-rendered; backend
+  in `src/app/api/*` route handlers.
+
+## Run locally
 
 ```
 pnpm install
-pnpm dev          # starts BOTH: API on :4000, web on :5173
+pnpm dev            # http://localhost:3000  (PGlite, no Docker, auto-migrates)
+pnpm test           # 12 tests
+pnpm typecheck
+pnpm build
 ```
 
-Open **http://localhost:5173** — that's the app.
+Local admin (seeded from `.env.local`): `admin@kash.network` / `localdev123`.
 
-- `/trial` — landing + gated video (use the DEV skip buttons on the player to
-  jump to the 1:53 email gate and the 3:35 content reveal)
-- submit an email at the gate → a free account is created, you land in the app
-  with only the **Harley's Story** tab
-- `/login` — paid/admin login. Local admin (seeded on boot):
-  **admin@kash.network / localdev123** (from `SEED_ADMIN_*` in `apps/api/.env`)
+## Live environment
 
-Other commands:
-
-```
-pnpm --filter @kash/api dev        # API only
-pnpm --filter @kash/web dev        # web only
-pnpm --filter @kash/api test       # 15 tests (in-memory + real PGlite)
-pnpm -r typecheck
-pnpm --filter @kash/api db reset   # wipe local PGlite + re-migrate
-```
-
-## Database — local only, no live Supabase
-
-Per the project decision, there is **no hosted/live database**. Local dev uses
-**PGlite** (embedded Postgres, no Docker), persisted to `apps/api/.pglite`
-(gitignored). Migrations in `supabase/migrations/` auto-apply on boot.
-
-Staging/production later: set `DATABASE_URL` to any hosted Postgres connection
-string and run `pnpm --filter @kash/api db migrate`. The code path is identical
-(`SqlRepo` runs the same SQL on both). `supabase-js` / Supabase Auth are not used.
-
-> The hosted Supabase project the client shared was briefly used to validate the
-> schema, then **wiped back to an empty `public` schema**. The management token
-> should still be rotated. Nothing is deployed anywhere.
+| | Value |
+|---|---|
+| Host | Vercel — project `kash-network`, scope "Tobiloba Olujimi's projects" |
+| DB | Supabase Postgres `cnjakpqizkplmpxxzrbh`, connected as a dedicated `kash_app` role via the **session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`). Not Supabase Auth / PostgREST — just Postgres. |
+| Migrations | `0001` + `0002` applied; 20 tables + seeded notifications |
+| Admin | `admin@kash.network` / `Knj9_T_NvWrp0L` (rotate via Profile tab) |
+| Deploys | manual — `npx vercel deploy --prod --token <VT>` from repo root. Not git-connected yet (Vercel GitHub App not installed on the `KashNetwork` GH account). |
+| Integrations | Explodely / Resend / AI / email-verify all on **fake adapters** until keys land (M2/M3) |
 
 ## Scope vs. delivered
 
-| M1 line item | Status | Where |
-|---|---|---|
-| Custom project setup and architecture | ✅ | `docs/ARCHITECTURE.md`, pnpm monorepo |
-| Database setup | ✅ local PGlite + SQL migrations (20 tables) | `supabase/migrations/`, `apps/api/src/db/` |
-| User authentication | ✅ custom (sessions + scrypt) | `apps/api/src/auth/*` |
-| Email verification | ✅ via `EmailProvider.verifyEmail` (fake list until a provider key is added) | `apps/api/src/routes/leads.ts` |
-| Free & paid user account states | ✅ `account_type` + `free_variant` | `presentMe()` |
-| User profiles | ✅ name / email-change-with-confirm / password | `routes/{me,auth}.ts`, Profile panel |
-| Free-user dashboard | ✅ single "Harley's Story" tab (sales page / reactivate screen) | `apps/web/src/app/panels.tsx` |
-| Paid-user dashboard structure | ✅ all 6 tabs | same |
-| Video/content gating + email capture | ✅ gate @ 1:53, reveal @ 3:35, `POST /api/leads` | `apps/web/src/components/VideoGate.tsx` |
-| Initial admin dashboard | ✅ overview cards + customer list + filters | admin panels + `routes/admin.ts` |
-| Core DB structure (users, subs, affiliates, referrals, transactions, commissions) | ✅ full schema incl. payouts, leads, email, fraud, audit | `0001_initial_schema.sql` |
-| Responsive frontend foundation | ✅ Tailwind, responsive shell (sidebar↔topbar), light theme | `apps/web` |
+| M1 line item | Status |
+|---|---|
+| Custom project setup & architecture | ✅ Next.js app, `docs/ARCHITECTURE.md` |
+| Database setup | ✅ SQL migrations, Supabase in prod / PGlite locally |
+| User authentication | ✅ custom (own sessions + scrypt) |
+| Email verification | ✅ via `EmailProvider.verifyEmail` (fake list until a provider key) |
+| Free & paid account states | ✅ `account_type` + `free_variant` → visible tabs |
+| User profiles | ✅ name / email-change-with-confirm / password |
+| Free-user dashboard | ✅ single "Harley's Story" tab (sales page / reactivate screen) |
+| Paid-user dashboard structure | ✅ all 6 tabs |
+| Video/content gating + email capture | ✅ gate @ 1:53, reveal @ 3:35, `POST /api/leads` |
+| Initial admin dashboard | ✅ overview cards + customer list + filters |
+| Core DB structure | ✅ full schema incl. payouts, leads, email, fraud, audit |
+| Responsive frontend foundation | ✅ Tailwind v4 + Lovable design system, light theme |
 
-## Deferred to later milestones
+## Deferred (later milestones)
 
-- Dashboard/Commissions **numbers** → M2 (Explodely IPN feeding `commissions`/`referrals`).
-- Cancel/reactivate execution, checkout embed → M2.
-- Cashout requests, email sequences, AI → M3.
+- Dashboard/Commissions **numbers** → M2 (Explodely IPN → commissions/referrals).
+- Checkout embed, cancel/reactivate execution → M2.
+- Cashout flow, email sequences, AI agent → M3.
 - Admin status-override UI button, referral reassignment UI, CSV export, live
-  fraud rules → M4 (the status-override **API** exists and is tested).
+  fraud rules → M4 (the status-override **API** exists + is tested).
 
-## Placeholders needing client content before launch
+## Placeholders needing client content
 
-- Landing + Buy Traffic videos (sample MP4 / placeholder box) — timestamps
-  1:53 / 3:35 confirmed in code.
-- Sales-page copy, landing reviews.
-- Buy Traffic destination URL (`panels.tsx`, `BuyTrafficPanel`).
-- Social-proof lines — 10 placeholder rows seeded (`0002_seed_notifications.sql`).
-- A real `EmailProvider.verifyEmail` provider (ZeroBounce/Kickbox/etc.).
+- Landing + Buy Traffic videos (currently Big Buck Bunny placeholder; timestamps
+  1:53 / 3:35 confirmed in code).
+- Real image files — `src/assets/*.asset.json` point at placehold.co. Need the
+  founder photo, results screenshots, 3 testimonial photos, highlight graphic.
+- Buy Traffic destination URL.
+- Approved social-proof lines (10 placeholders seeded).
+- A real `EmailProvider.verifyEmail` provider.
 
-## Security notes
+## To enable auto-deploy on push
 
-- Sessions: opaque token, sha-256 at rest, httpOnly cookie. Lead sessions ~10y
-  (passwordless per spec); user sessions 30d sliding, revoked on logout / password
-  change.
-- RLS enabled on all tables with no policies (default deny) as defense-in-depth.
-- No secrets in the repo. `apps/api/.env` (gitignored) holds only local dev values.
+Install the **Vercel GitHub App** on the `KashNetwork` GitHub account → Vercel
+project `kash-network` → Settings → Git → Connect `KashNetwork/KashNetwork`.
+Until then, deploys are manual via the Vercel token.

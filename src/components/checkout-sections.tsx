@@ -51,6 +51,7 @@ export function Field({
 export function CheckoutGrid({
   ctaLabel = "Process Checkout Now",
   ctaNote,
+  ctaHref = "/api/checkout/start",
   title = "Complete Your Secure Order",
   showPanel = true,
   wide = false,
@@ -58,6 +59,7 @@ export function CheckoutGrid({
 }: {
   ctaLabel?: string;
   ctaNote?: string;
+  ctaHref?: string;
   title?: string;
   showPanel?: boolean;
   wide?: boolean;
@@ -248,9 +250,9 @@ export function CheckoutGrid({
               </div>
             ) : null}
 
-            <button
-              type="button"
-              className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-3 py-4 font-display font-extrabold whitespace-nowrap uppercase transition-transform hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-5"
+            <a
+              href={ctaHref}
+              className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-3 py-4 font-display font-extrabold whitespace-nowrap uppercase no-underline transition-transform hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-5"
               style={{
                 background: "linear-gradient(180deg, #79EE3C 0%, #4FD41B 100%)",
                 color: "#04184E",
@@ -261,7 +263,7 @@ export function CheckoutGrid({
             >
               {ctaLabel}
               <ArrowRight className={showTrialSummary ? "h-5 w-5 sm:h-6 sm:w-6" : "h-4 w-4 sm:h-5 sm:w-5"} />
-            </button>
+            </a>
 
 
             {ctaNote ? (

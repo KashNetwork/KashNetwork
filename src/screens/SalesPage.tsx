@@ -14,7 +14,7 @@ import closingAsset from "@/assets/closing.jpg.asset.json";
 const ink = "rgb(4, 24, 78)";
 const lime = "#75ef4e";
 const limeGrad = "linear-gradient(#7ef450 0%, #5be030 100%)";
-const CHECKOUT = "/secure-checkout";
+const CHECKOUT = "/api/checkout/start";
 
 const IMAGES: Record<string, string> = {
   founder: founderAsset.url,

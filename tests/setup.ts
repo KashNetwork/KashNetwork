@@ -1,5 +1,9 @@
 import { vi } from 'vitest';
 
+// deterministic config for adapter tests (read at module-eval by src/server/config)
+process.env.EXPLODELY_IPN_SECRET ??= 'test-token';
+process.env.EXPLODELY_PRODUCT_ID ??= '12345';
+
 /** In-memory cookie jar shared by tests, standing in for Next's request cookies. */
 export const cookieJar = new Map<string, string>();
 

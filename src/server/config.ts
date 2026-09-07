@@ -22,11 +22,14 @@ export const config = {
   },
 
   explodely: {
+    username: env.EXPLODELY_USERNAME ?? '',
     apiKey: env.EXPLODELY_API_KEY ?? '',
+    // secret token appended to the IPN URL (Explodely doesn't sign IPNs)
     ipnSecret: env.EXPLODELY_IPN_SECRET ?? '',
     productId: env.EXPLODELY_PRODUCT_ID ?? '',
+    checkoutBase: env.EXPLODELY_CHECKOUT_BASE ?? 'https://explodely.com/p',
     get enabled() {
-      return Boolean(this.ipnSecret);
+      return Boolean(this.ipnSecret && this.productId);
     },
   },
 

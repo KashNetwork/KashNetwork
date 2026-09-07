@@ -55,7 +55,7 @@ function HarleysStory() {
   const { me } = useAuth();
   if (me?.freeVariant === 'downgraded') {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#f6f7f9] px-4">
+      <div className="grid min-h-screen place-items-center bg-[#eceef2] px-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200/70">
           <span
             className="mx-auto grid h-12 w-12 place-items-center rounded-2xl text-white"

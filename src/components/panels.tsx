@@ -1,10 +1,37 @@
 'use client';
 
 import { useEffect, useState, type ComponentType } from 'react';
-import { Banner, Button, Card, Field, Input, StatCard } from '@/components/ui';
+import {
+  ArrowRight,
+  Banknote,
+  CircleDollarSign,
+  Clock,
+  History,
+  Link2,
+  MousePointerClick,
+  Receipt,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  UserCog,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import SalesPage from '@/screens/SalesPage';
 import { api, ApiError, type AdminUserRow } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import {
+  Btn,
+  CopyRow,
+  EmptyState,
+  Field,
+  Input,
+  Notice,
+  Panel,
+  StatCard,
+  StatusPill,
+} from '@/components/dash';
+import { cn } from '@/lib/utils';
 
 export type TabKey =
   | 'harleys_story'
@@ -18,71 +45,89 @@ export type TabKey =
   | 'payouts'
   | 'admin';
 
-export const TAB_LABELS: Record<TabKey, string> = {
-  harleys_story: "Harley's Story",
-  dashboard: 'Dashboard',
-  commissions: 'Commissions',
-  buy_traffic: 'Buy Traffic',
-  support: 'Support',
-  profile: 'Profile',
-  cancel_subscription: 'Cancel Subscription',
-  customers: 'Customers',
-  payouts: 'Payouts',
-  admin: 'Admin',
-};
+const SOON_M2 = 'Live in Milestone 2';
+const SOON_M3 = 'Live in Milestone 3';
+const SOON_M4 = 'Live in Milestone 4';
 
-const M2 = 'Wired to live data in Milestone 2 (payments & affiliate system).';
-const M3 = 'Wired in Milestone 3 (payouts, email & AI).';
+/* --------------------------------------------------- Harley's Story (free) */
 
-// --- Harley's Story (free users) ---------------------------------------------
 function HarleysStory() {
   const { me } = useAuth();
   if (me?.freeVariant === 'downgraded') {
     return (
-      <Card className="text-center">
-        <h2 className="text-xl font-bold text-foreground">Reactivate your account</h2>
-        <p className="mx-auto mt-2 max-w-prose text-sm text-slate-600">
-          Your paid membership has ended. Reactivate for $47/month to regain your
-          dashboard and affiliate link.
-        </p>
-        <Banner tone="warn" >Reactivation checkout is wired in Milestone 2.</Banner>
-      </Card>
+      <div className="grid min-h-screen place-items-center bg-[#f6f7f9] px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200/70">
+          <span
+            className="mx-auto grid h-12 w-12 place-items-center rounded-2xl text-white"
+            style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#22c55e)' }}
+          >
+            <Sparkles className="h-5 w-5" />
+          </span>
+          <h2 className="mt-4 font-display text-xl font-extrabold text-slate-900">
+            Reactivate your membership
+          </h2>
+          <p className="mx-auto mt-2 text-sm text-slate-500">
+            Your paid membership has ended. Reactivate for $47/month to get your dashboard and
+            affiliate link back.
+          </p>
+          <Btn className="mt-5 w-full" disabled>
+            Reactivate for $47/month
+          </Btn>
+          <p className="mt-2 text-xs text-slate-400">{SOON_M2}</p>
+        </div>
+      </div>
     );
   }
-  return <SalesPage embedded />;
+  return <SalesPage />;
 }
 
-// --- Affiliate / admin dashboard -------------------------------------------
+/* ------------------------------------------------------ affiliate dashboard */
+
 function DashboardPanel() {
   const { me } = useAuth();
   if (me?.role === 'admin') return <AdminDashboard />;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total Clicks" value="0" />
-        <StatCard label="Total Referrals" value="0" />
-        <StatCard label="Total Commissions" value="$0.00" />
-        <StatCard label="Pending" value="$0.00" />
+        <StatCard label="Total clicks" value="0" icon={MousePointerClick} featured hint="on your link" />
+        <StatCard label="Total referrals" value="0" icon={Users} hint="people you brought in" />
+        <StatCard label="Total commissions" value="$0.00" icon={CircleDollarSign} hint="all time" />
+        <StatCard label="Pending" value="$0.00" icon={Clock} hint="in 30-day hold" />
       </div>
 
-      <Card title="Your referral link">
+      <Panel title="Your referral link">
         {me?.affiliate ? (
-          <CopyRow value={me.affiliate.links.landing} />
+          <div className="space-y-2">
+            <CopyRow value={me.affiliate.links.landing} />
+            <p className="text-xs text-slate-400">
+              Share this link. It points to the landing page and tracks for 30 days (last click wins).
+            </p>
+          </div>
         ) : (
           <p className="text-sm text-slate-500">
-            Your affiliate link appears here once your paid account is active.
+            Your affiliate link activates once your paid account is active.
           </p>
         )}
-      </Card>
+      </Panel>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Recent referrals">
-          <p className="text-sm text-slate-500">No referrals yet. {M2}</p>
-        </Card>
-        <Card title="Commission history">
-          <p className="text-sm text-slate-500">No commissions yet. {M2}</p>
-        </Card>
+        <Panel title="Recent referrals" bodyClassName="p-0">
+          <EmptyState
+            icon={Users}
+            title="No referrals yet"
+            hint="People who sign up through your link will appear here."
+            soon={SOON_M2}
+          />
+        </Panel>
+        <Panel title="Commission history" bodyClassName="p-0">
+          <EmptyState
+            icon={History}
+            title="No commissions yet"
+            hint="You earn $30 on every $47 renewal from your referrals."
+            soon={SOON_M2}
+          />
+        </Panel>
       </div>
     </div>
   );
@@ -90,38 +135,79 @@ function DashboardPanel() {
 
 function CommissionsPanel() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Wallet" value="$0.00" sub="Available to withdraw" />
-        <StatCard label="Pending" value="$0.00" sub="30-day hold" />
-        <StatCard label="Total earnings" value="$0.00" sub="This month" />
+        <StatCard label="Wallet" value="$0.00" icon={Wallet} featured hint="available to withdraw" />
+        <StatCard label="Pending" value="$0.00" icon={Clock} hint="30-day hold" />
+        <StatCard label="This month" value="$0.00" icon={CircleDollarSign} hint="total earnings" />
       </div>
-      <Card title="Cashouts — withdraw history">
-        <p className="text-sm text-slate-500">No cashouts yet. {M3}</p>
-      </Card>
-      <Card title="Transactions — your account payments">
-        <p className="text-sm text-slate-500">
-          Your own $1 and $47 payments show here (not your referrals'). {M2}
-        </p>
-      </Card>
+
+      <Panel
+        title="Cashouts"
+        action={
+          <Btn variant="outline" disabled className="!py-1.5 !text-xs">
+            Request cashout
+          </Btn>
+        }
+        bodyClassName="p-0"
+      >
+        <EmptyState
+          icon={Banknote}
+          title="No cashout history"
+          hint="Request a payout once you have an available balance. Admin approves manually."
+          soon={SOON_M3}
+        />
+      </Panel>
+
+      <Panel title="Transactions" bodyClassName="p-0">
+        <EmptyState
+          icon={Receipt}
+          title="No transactions yet"
+          hint="Your own $1 trial and $47 monthly payments show here — not your referrals'."
+          soon={SOON_M2}
+        />
+      </Panel>
     </div>
   );
 }
 
 function BuyTrafficPanel() {
   return (
-    <div className="space-y-5">
-      <h2 className="text-2xl font-extrabold tracking-tight text-foreground">GET STARTED</h2>
-      <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-slate-200">
-        {/* TODO(client): embedded Buy Traffic video */}
-        <div className="flex h-full items-center justify-center text-sm text-slate-400">
-          Video placeholder
+    <div className="space-y-6">
+      <Panel>
+        <div className="flex items-center gap-3">
+          <span
+            className="grid h-11 w-11 place-items-center rounded-2xl text-white"
+            style={{ backgroundImage: 'linear-gradient(135deg,#1466d0,#15803d)' }}
+          >
+            <Rocket className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="font-display text-xl font-extrabold tracking-tight text-slate-900">
+              GET STARTED
+            </h2>
+            <p className="text-sm text-slate-500">Watch this, then click through to the traffic source.</p>
+          </div>
         </div>
-      </div>
-      <a href="https://example.com/traffic" target="_blank" rel="noreferrer">
-        {/* TODO(client): real Buy Traffic destination URL */}
-        <Button className="w-full py-3 text-base sm:w-auto">Open the traffic source →</Button>
-      </a>
+
+        <div className="mt-5 aspect-video w-full overflow-hidden rounded-2xl bg-slate-900 ring-1 ring-slate-200">
+          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+            {/* TODO(client): embedded Buy Traffic video */}
+            Video — pending client
+          </div>
+        </div>
+
+        <a
+          href="https://example.com/traffic"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white hover:bg-slate-800 sm:w-auto"
+        >
+          {/* TODO(client): real Buy Traffic destination URL */}
+          Open the traffic source
+          <ArrowRight className="h-4 w-4" />
+        </a>
+      </Panel>
     </div>
   );
 }
@@ -149,14 +235,14 @@ function SupportPanel() {
   }
 
   return (
-    <Card>
-      {state === 'sent' && <Banner>Message sent to support@kash.network. We'll be in touch.</Banner>}
-      <form onSubmit={submit} className="mt-2 space-y-4">
+    <Panel title="Contact support" className="max-w-2xl">
+      {state === 'sent' && <Notice tone="success">Message sent — the team will get back to you by email.</Notice>}
+      <form onSubmit={submit} className={cn('space-y-4', state === 'sent' && 'mt-4')}>
         <Field label="From">
           <Input value={me?.email ?? ''} readOnly className="bg-slate-50 text-slate-500" />
         </Field>
         <Field label="Subject">
-          <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
+          <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="What's this about?" />
         </Field>
         <Field label="Message">
           <textarea
@@ -164,15 +250,16 @@ function SupportPanel() {
             rows={5}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-border"
+            placeholder="Tell us what's going on…"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:ring-4 focus:ring-slate-100"
           />
         </Field>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={state === 'sending'}>
+        {error && <p className="text-sm text-rose-600">{error}</p>}
+        <Btn type="submit" disabled={state === 'sending'}>
           {state === 'sending' ? 'Sending…' : 'Send message'}
-        </Button>
+        </Btn>
       </form>
-    </Card>
+    </Panel>
   );
 }
 
@@ -198,11 +285,11 @@ function ProfilePanel() {
   };
 
   return (
-    <div className="space-y-5">
-      {msg && <Banner>{msg}</Banner>}
-      {err && <p className="text-sm text-red-600">{err}</p>}
+    <div className="max-w-2xl space-y-6">
+      {msg && <Notice tone="success">{msg}</Notice>}
+      {err && <Notice tone="warn">{err}</Notice>}
 
-      <Card title="Account">
+      <Panel title="Account">
         <form
           onSubmit={wrap(async () => {
             await api.updateName(name.trim());
@@ -213,14 +300,14 @@ function ProfilePanel() {
           <Field label="Full name">
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Button type="submit">Save changes</Button>
+          <Btn type="submit">Save changes</Btn>
         </form>
 
         <form
           onSubmit={wrap(async () => {
             const r = await api.requestEmailChange(newEmail.trim());
             setNewEmail('');
-            return `Confirmation sent to ${r.pendingEmail}. Changing email requires confirmation from your new address.`;
+            return `Confirmation sent to ${r.pendingEmail}. Changing your email needs confirmation from the new address.`;
           })}
           className="mt-6 space-y-4 border-t border-slate-100 pt-6"
         >
@@ -232,13 +319,13 @@ function ProfilePanel() {
               onChange={(e) => setNewEmail(e.target.value)}
             />
           </Field>
-          <Button type="submit" variant="ghost">
+          <Btn type="submit" variant="outline">
             Request email change
-          </Button>
+          </Btn>
         </form>
-      </Card>
+      </Panel>
 
-      <Card title={me?.hasPassword ? 'Update password' : 'Set a password'}>
+      <Panel title={me?.hasPassword ? 'Update password' : 'Set a password'}>
         <form
           onSubmit={wrap(async () => {
             await api.setPassword(pw, me?.hasPassword ? curPw : undefined);
@@ -256,46 +343,98 @@ function ProfilePanel() {
           <Field label="New password" hint="At least 8 characters.">
             <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} />
           </Field>
-          <Button type="submit">{me?.hasPassword ? 'Update password' : 'Set password'}</Button>
+          <Btn type="submit">{me?.hasPassword ? 'Update password' : 'Set password'}</Btn>
         </form>
-      </Card>
+      </Panel>
     </div>
   );
 }
 
 function CancelPanel() {
   return (
-    <Card>
-      <h2 className="text-base font-semibold text-foreground">Cancel your subscription?</h2>
-      <p className="mt-2 text-sm text-slate-600">
-        You'll keep paid access until the end of the current billing period. After that your
-        account downgrades to free, your affiliate link is removed, and future commissions and
-        referrals move to the admin. You can undo the cancellation any time before the period
-        ends, or reactivate later at $47/month.
+    <Panel className="max-w-2xl">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-500">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-base font-bold text-slate-900">Cancel your subscription?</h2>
+          <p className="mt-2 text-sm text-slate-500">
+            You keep paid access until the end of your current billing period. After that your
+            account downgrades to free, your affiliate link is removed, and future commissions and
+            referrals move to the admin. You can undo the cancellation any time before the period
+            ends, or reactivate later at $47/month.
+          </p>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Btn variant="outline" disabled>
+          Never mind, keep my plan
+        </Btn>
+        <Btn className="!bg-rose-600 hover:!bg-rose-700" disabled>
+          Cancel subscription
+        </Btn>
+      </div>
+      <p className="mt-3 text-xs text-slate-400">
+        The cancel / undo flow connects to Explodely in Milestone 2.
       </p>
-      <Banner tone="warn">
-        The cancel / undo flow is wired to Explodely in Milestone 2.
-      </Banner>
-    </Card>
+    </Panel>
   );
 }
 
-// --- Admin ------------------------------------------------------------------
+/* ---------------------------------------------------------------- admin */
+
 function AdminDashboard() {
   const [data, setData] = useState<Awaited<ReturnType<typeof api.adminOverview>> | null>(null);
   useEffect(() => {
     api.adminOverview().then(setData).catch(() => undefined);
   }, []);
   const money = (c: number) => `$${(c / 100).toLocaleString()}`;
+  const n = (v: number | undefined) => (v === undefined ? '—' : v.toLocaleString());
+
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      <StatCard label="Admin revenue" value={data ? money(data.adminRevenueCents) : '—'} sub="est." />
-      <StatCard label="Active paid" value={data ? String(data.activePaidMembers) : '—'} />
-      <StatCard label="Free leads" value={data ? String(data.freeLeads) : '—'} />
-      <StatCard label="Pending payouts" value={data ? money(data.pendingPayoutsCents) : '—'} />
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label="Admin revenue"
+          value={data ? money(data.adminRevenueCents) : '—'}
+          icon={CircleDollarSign}
+          featured
+          hint="estimated, this month"
+        />
+        <StatCard label="Active paid members" value={n(data?.activePaidMembers)} icon={Users} />
+        <StatCard label="Free leads" value={n(data?.freeLeads)} icon={MousePointerClick} />
+        <StatCard label="Pending payouts" value={data ? money(data.pendingPayoutsCents) : '—'} icon={Wallet} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panel title="Recent activity" className="lg:col-span-2" bodyClassName="p-0">
+          <EmptyState
+            icon={History}
+            title="Nothing to show yet"
+            hint="Signups, upgrades, cancellations and payout requests will stream here."
+            soon={SOON_M2}
+          />
+        </Panel>
+        <Panel title="Quick actions" bodyClassName="p-0">
+          <EmptyState
+            icon={ShieldCheck}
+            title="Controls coming"
+            hint="Approve payouts, override account status, reassign referrals."
+            soon={SOON_M4}
+          />
+        </Panel>
+      </div>
     </div>
   );
 }
+
+const FILTERS = [
+  { k: 'all', label: 'All' },
+  { k: 'free_leads', label: 'Free leads' },
+  { k: 'active_paid', label: 'Active paid' },
+  { k: 'cancelled', label: 'Cancelled' },
+];
 
 function AdminCustomers() {
   const [rows, setRows] = useState<AdminUserRow[]>([]);
@@ -305,65 +444,72 @@ function AdminCustomers() {
 
   useEffect(() => {
     const id = setTimeout(() => {
-      api.adminUsers(filter, 1, q).then((r) => {
-        setRows(r.rows);
-        setTotal(r.total);
-      });
+      api
+        .adminUsers(filter, 1, q)
+        .then((r) => {
+          setRows(r.rows);
+          setTotal(r.total);
+        })
+        .catch(() => undefined);
     }, 200);
     return () => clearTimeout(id);
   }, [filter, q]);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        {['all', 'free_leads', 'active_paid', 'cancelled'].map((f) => (
+      <div className="flex flex-wrap items-center gap-2">
+        {FILTERS.map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-              filter === f ? 'bg-primary text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'
-            }`}
+            key={f.k}
+            onClick={() => setFilter(f.k)}
+            className={cn(
+              'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
+              filter === f.k
+                ? 'bg-slate-900 text-white'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+            )}
           >
-            {f.replace('_', ' ')}
+            {f.label}
           </button>
         ))}
-        <Input
-          placeholder="Search email…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="ml-auto max-w-[220px]"
-        />
+        <div className="ml-auto w-full sm:w-64">
+          <Input placeholder="Search by email…" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
       </div>
 
-      <Card>
+      <Panel bodyClassName="p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
-              <tr>
-                <th className="pb-2">Email</th>
-                <th className="pb-2">Status</th>
-                <th className="pb-2">Affiliate</th>
-                <th className="pb-2">Joined</th>
+            <thead>
+              <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
+                <th className="px-5 py-3 font-semibold">Email</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Affiliate code</th>
+                <th className="px-5 py-3 font-semibold">Referrals</th>
+                <th className="px-5 py-3 font-semibold">Joined</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               {rows.map((r) => (
-                <tr key={r.id}>
-                  <td className="py-2.5">{r.email}</td>
-                  <td className="py-2.5">
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
-                      {r.free_variant === 'downgraded' ? 'cancelled' : r.account_type}
-                    </span>
+                <tr key={r.id} className="hover:bg-slate-50/60">
+                  <td className="px-5 py-3 font-medium text-slate-800">{r.email}</td>
+                  <td className="px-5 py-3">
+                    <StatusPill
+                      status={r.free_variant === 'downgraded' ? 'cancelled' : r.account_type}
+                    />
                   </td>
-                  <td className="py-2.5 text-slate-500">{r.affiliate_code ?? '—'}</td>
-                  <td className="py-2.5 text-slate-500">
+                  <td className="px-5 py-3 font-mono text-xs text-slate-500">
+                    {r.affiliate_code ?? '—'}
+                  </td>
+                  <td className="px-5 py-3 text-slate-500">{r.referral_count}</td>
+                  <td className="px-5 py-3 text-slate-500">
                     {new Date(r.created_at).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-6 text-center text-slate-400">
+                  <td colSpan={5} className="px-5 py-14 text-center text-sm text-slate-400">
                     No matching users
                   </td>
                 </tr>
@@ -371,50 +517,66 @@ function AdminCustomers() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-slate-400">{total} total · status override & referral reassignment land in Milestone 4</p>
-      </Card>
+        <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">
+          {total} total · status override & referral reassignment — {SOON_M4}
+        </div>
+      </Panel>
     </div>
   );
 }
 
 function AdminPayouts() {
   return (
-    <Card title="Cashout requests">
-      <p className="text-sm text-slate-500">
-        Approval queue, mark-paid, reject, and CSV export. {M3}
-      </p>
-    </Card>
+    <Panel bodyClassName="p-0">
+      <EmptyState
+        icon={Banknote}
+        title="No cashout requests"
+        hint="Affiliate payout requests land here — approve & mark paid, reject, or export CSV for batch payment."
+        soon={SOON_M3}
+      />
+    </Panel>
   );
 }
 
 function AdminSettings() {
   const { me } = useAuth();
   return (
-    <Card title="Admin">
-      <p className="text-sm text-slate-600">Signed in as {me?.email}</p>
-      <p className="mt-2 text-sm text-slate-500">
-        System settings (payout minimums, reserves, fraud thresholds) land in Milestone 4.
-      </p>
-    </Card>
-  );
-}
+    <div className="max-w-2xl space-y-6">
+      <Panel title="Signed in as">
+        <div className="flex items-center gap-3">
+          <span
+            className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white"
+            style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#22c55e)' }}
+          >
+            {(me?.fullName ?? me?.email ?? 'A').charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <div className="text-sm font-semibold text-slate-900">{me?.fullName ?? 'Admin'}</div>
+            <div className="text-xs text-slate-400">{me?.email}</div>
+          </div>
+          <span className="ml-auto">
+            <StatusPill status="admin" />
+          </span>
+        </div>
+      </Panel>
 
-// --- shared bits -----------------------------------------------------------
-function CopyRow({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="flex gap-2">
-      <Input readOnly value={value} className="bg-slate-50" />
-      <Button
-        variant="ghost"
-        onClick={() => {
-          void navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }}
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </Button>
+      <Panel title="System settings" bodyClassName="p-0">
+        <EmptyState
+          icon={UserCog}
+          title="Configuration panel coming"
+          hint="Payout minimums & reserves, commission hold window, fraud thresholds, notification content."
+          soon={SOON_M4}
+        />
+      </Panel>
+
+      <Panel title="Safeguards" bodyClassName="p-0">
+        <EmptyState
+          icon={ShieldCheck}
+          title="Fraud & business rules"
+          hint="Duplicate accounts, self-referrals, chargeback / refund reversals, attribution conflicts, payout timing."
+          soon={SOON_M4}
+        />
+      </Panel>
     </div>
   );
 }
@@ -430,4 +592,18 @@ export const PANELS: Record<TabKey, ComponentType> = {
   customers: AdminCustomers,
   payouts: AdminPayouts,
   admin: AdminSettings,
+};
+
+// re-exported for AppShell
+export const TAB_LABELS: Record<TabKey, string> = {
+  harleys_story: "Harley's Story",
+  dashboard: 'Dashboard',
+  commissions: 'Commissions',
+  buy_traffic: 'Buy Traffic',
+  support: 'Support',
+  profile: 'Profile',
+  cancel_subscription: 'Cancel Subscription',
+  customers: 'Customers',
+  payouts: 'Payouts',
+  admin: 'Admin',
 };

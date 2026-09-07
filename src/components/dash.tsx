@@ -28,17 +28,17 @@ export interface NavGroup {
 
 function KashLogo() {
   return (
-    <span className="flex items-center gap-2.5 px-1">
+    <span className="flex items-center gap-2.5">
       <span
-        className="grid h-9 w-9 place-items-center rounded-xl"
+        className="grid h-9 w-9 place-items-center rounded-2xl shadow-[0_6px_16px_-6px_rgba(20,102,208,0.6)]"
         style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#17A3B8,#22c55e)' }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.1">
           <path d="M12 2.6 20.1 7v10L12 21.4 3.9 17V7z" />
           <circle cx="12" cy="12" r="3.6" />
         </svg>
       </span>
-      <span className="font-display text-[17px] font-extrabold tracking-tight text-slate-900">
+      <span className="font-display text-[16px] font-bold tracking-tight text-slate-900">
         Kash Network
       </span>
     </span>
@@ -70,7 +70,7 @@ export function Shell({
 
   const sidebar = (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="flex h-[68px] items-center justify-between border-b border-slate-100 px-5">
         <KashLogo />
         <button
           className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 lg:hidden"
@@ -80,10 +80,10 @@ export function Shell({
         </button>
       </div>
 
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6">
         {nav.map((group) => (
           <div key={group.label}>
-            <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="px-3 pb-2.5 text-[10.5px] font-bold uppercase tracking-[0.14em] text-slate-400">
               {group.label}
             </div>
             <div className="space-y-1">
@@ -98,15 +98,15 @@ export function Shell({
                       setMobileOpen(false);
                     }}
                     className={cn(
-                      'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                      'flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-[13.5px] font-semibold transition',
                       on
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                        ? 'bg-slate-900 text-white shadow-[0_8px_20px_-8px_rgba(15,23,42,0.5)]'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900',
                     )}
                   >
                     <Icon className={cn('h-[18px] w-[18px]', on ? 'text-white' : 'text-slate-400')} />
                     {item.label}
-                    {on && <ChevronRight className="ml-auto h-4 w-4 text-white/70" />}
+                    {on && <ChevronRight className="ml-auto h-4 w-4 text-white/60" />}
                   </button>
                 );
               })}
@@ -115,8 +115,8 @@ export function Shell({
         ))}
       </nav>
 
-      <div className="border-t border-slate-100 p-3">
-        <div className="flex items-center gap-3 rounded-xl px-2 py-2">
+      <div className="border-t border-slate-100 p-4">
+        <div className="flex items-center gap-3 rounded-2xl px-2 py-1.5">
           <span
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
             style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#22c55e)' }}
@@ -144,66 +144,74 @@ export function Shell({
   );
 
   return (
-    <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
-      {/* desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 lg:block">
-        {sidebar}
-      </aside>
-
-      {/* mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setMobileOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-72 border-r border-slate-200 shadow-xl">
+    <div className="min-h-screen bg-[#eceef2] font-sans text-slate-900">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1560px] gap-3 p-2 sm:p-3 lg:gap-4 lg:p-4">
+        {/* desktop sidebar — floating panel */}
+        <aside className="hidden w-[264px] shrink-0 lg:block">
+          <div className="sticky top-4 flex h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] ring-1 ring-slate-200/70">
             {sidebar}
           </div>
-        </div>
-      )}
+        </aside>
 
-      <div className="lg:pl-64">
-        {/* topbar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur sm:px-6">
-          <button
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
-            onClick={() => setMobileOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="relative hidden max-w-sm flex-1 sm:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              placeholder="Search…"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white"
-            />
-          </div>
-          <div className="ml-auto flex items-center gap-1">
-            <button className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
-              <Mail className="h-[18px] w-[18px]" />
-            </button>
-            <button className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
-              <Bell className="h-[18px] w-[18px]" />
-            </button>
-            <span
-              className="ml-1 grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white"
-              style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#22c55e)' }}
-            >
-              {(user.name ?? user.email).charAt(0).toUpperCase()}
-            </span>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-                {title}
-              </h1>
-              {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+        {/* mobile drawer */}
+        {mobileOpen && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <div className="absolute inset-0 bg-slate-900/40" onClick={() => setMobileOpen(false)} />
+            <div className="absolute inset-y-2 left-2 w-72 overflow-hidden rounded-[24px] bg-white shadow-2xl">
+              {sidebar}
             </div>
-            {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
           </div>
-          {children}
-        </main>
+        )}
+
+        {/* main — floating panel */}
+        <div className="min-w-0 flex-1">
+          <div className="flex min-h-[calc(100vh-1rem)] flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] ring-1 ring-slate-200/70 lg:min-h-[calc(100vh-2rem)]">
+            <header className="flex h-[68px] shrink-0 items-center gap-3 border-b border-slate-100 px-4 sm:px-6">
+              <button
+                className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+                onClick={() => setMobileOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div className="relative hidden max-w-sm flex-1 sm:block">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  placeholder="Search…"
+                  className="w-full rounded-full border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:bg-white"
+                />
+              </div>
+              <div className="ml-auto flex items-center gap-1">
+                <button className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                  <Mail className="h-[18px] w-[18px]" />
+                </button>
+                <button className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                  <Bell className="h-[18px] w-[18px]" />
+                </button>
+                <span
+                  className="ml-1.5 grid h-9 w-9 place-items-center rounded-full text-xs font-bold text-white"
+                  style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#22c55e)' }}
+                >
+                  {(user.name ?? user.email).charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </header>
+
+            <div className="flex-1 bg-[#fbfbfc] px-5 py-7 sm:px-8 sm:py-9">
+              <div className="mx-auto max-w-5xl">
+                <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h1 className="font-display text-[26px] font-bold tracking-tight text-slate-900">
+                      {title}
+                    </h1>
+                    {subtitle && <p className="mt-1.5 text-sm text-slate-500">{subtitle}</p>}
+                  </div>
+                  {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
+                </div>
+                {children}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -220,7 +228,7 @@ export function Btn({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50',
         variant === 'primary' && 'bg-slate-900 text-white hover:bg-slate-800',
         variant === 'outline' &&
           'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
@@ -252,9 +260,9 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'rounded-2xl p-5 ring-1 transition',
+        'rounded-[20px] p-5 ring-1 transition sm:p-6',
         featured
-          ? 'text-white ring-transparent'
+          ? 'text-white ring-transparent shadow-[0_16px_36px_-18px_rgba(14,116,144,0.55)]'
           : 'bg-white text-slate-900 ring-slate-200/70 hover:ring-slate-300',
       )}
       style={
@@ -320,14 +328,14 @@ export function Panel({
   bodyClassName?: string;
 }) {
   return (
-    <section className={cn('rounded-2xl bg-white ring-1 ring-slate-200/70', className)}>
+    <section className={cn('rounded-[20px] bg-white ring-1 ring-slate-200/70', className)}>
       {(title || action) && (
-        <header className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="text-sm font-bold text-slate-900">{title}</h2>
+        <header className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
+          <h2 className="text-[13px] font-bold uppercase tracking-wide text-slate-500">{title}</h2>
           {action}
         </header>
       )}
-      <div className={cn('p-5', bodyClassName)}>{children}</div>
+      <div className={cn('p-5 sm:p-6', bodyClassName)}>{children}</div>
     </section>
   );
 }

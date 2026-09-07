@@ -4,14 +4,17 @@
 
 import type { AiProvider, EmailProvider, PaymentProvider } from '@/shared';
 import { config } from '../config';
+import { ExplodelyProvider } from './explodely';
 import { fakeAiProvider, fakeEmailProvider, fakePaymentProvider } from './fakes';
 import { ResendEmailProvider } from './resend';
 
 let emailProvider: EmailProvider | null = null;
+let paymentProvider: PaymentProvider | null = null;
 
 export function getPaymentProvider(): PaymentProvider {
-  // TODO(M2): return new ExplodelyProvider(config.explodely) when enabled
-  return fakePaymentProvider;
+  if (paymentProvider) return paymentProvider;
+  paymentProvider = config.explodely.enabled ? new ExplodelyProvider() : fakePaymentProvider;
+  return paymentProvider;
 }
 
 export function getEmailProvider(): EmailProvider {

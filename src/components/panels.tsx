@@ -18,7 +18,14 @@ import {
   Wallet,
 } from 'lucide-react';
 import SalesPage from '@/screens/SalesPage';
-import { api, ApiError, type AdminUserRow } from '@/lib/api';
+import {
+  api,
+  ApiError,
+  money,
+  type AdminUserRow,
+  type AffiliateStats,
+  type SubscriptionSummary,
+} from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import {
   Btn,
@@ -83,17 +90,48 @@ function HarleysStory() {
 
 /* ------------------------------------------------------ affiliate dashboard */
 
+const STATUS_TONE: Record<string, string> = {
+  pending: 'text-amber-600 bg-amber-50',
+  available: 'text-emerald-600 bg-emerald-50',
+  requested: 'text-blue-600 bg-blue-50',
+  paid: 'text-emerald-700 bg-emerald-100',
+  reversed: 'text-rose-600 bg-rose-50',
+  rejected: 'text-slate-500 bg-slate-100',
+  trial: 'text-blue-600 bg-blue-50',
+  active: 'text-emerald-600 bg-emerald-50',
+  cancelled: 'text-rose-600 bg-rose-50',
+  refunded: 'text-rose-600 bg-rose-50',
+};
+const tag = (s: string) => (
+  <span className={cn('rounded-md px-1.5 py-0.5 text-[11px] font-semibold capitalize', STATUS_TONE[s] ?? 'bg-slate-100 text-slate-500')}>
+    {s}
+  </span>
+);
+const shortDate = (d: string) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
 function DashboardPanel() {
   const { me } = useAuth();
+  const [data, setData] = useState<Awaited<ReturnType<typeof api.dashboard>> | null>(null);
+  const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    if (me?.role === 'admin') return;
+    api.dashboard().then(setData).catch(() => setErr(true));
+  }, [me?.role]);
+
   if (me?.role === 'admin') return <AdminDashboard />;
+
+  const s: AffiliateStats | undefined = data?.stats;
+  const v = (n: number | undefined) => (n === undefined ? '—' : n.toLocaleString());
+  const m = (n: number | undefined) => (n === undefined ? '—' : money(n));
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total clicks" value="0" icon={MousePointerClick} featured hint="on your link" />
-        <StatCard label="Total referrals" value="0" icon={Users} hint="people you brought in" />
-        <StatCard label="Total commissions" value="$0.00" icon={CircleDollarSign} hint="all time" />
-        <StatCard label="Pending" value="$0.00" icon={Clock} hint="in 30-day hold" />
+        <StatCard label="Total clicks" value={v(s?.totalClicks)} icon={MousePointerClick} featured hint="on your link" />
+        <StatCard label="Total referrals" value={v(s?.totalReferrals)} icon={Users} hint="people you brought in" />
+        <StatCard label="Total commissions" value={m(s?.totalCommissionsCents)} icon={CircleDollarSign} hint="all time" />
+        <StatCard label="Pending" value={m(s?.pendingCents)} icon={Clock} hint="in 30-day hold" />
       </div>
 
       <Panel title="Your referral link">
@@ -112,34 +150,59 @@ function DashboardPanel() {
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Recent referrals" bodyClassName="p-0">
-          <EmptyState
-            icon={Users}
-            title="No referrals yet"
-            hint="People who sign up through your link will appear here."
-            soon={SOON_M2}
-          />
+        <Panel title="Recent referrals" bodyClassName={data?.recentReferrals.length ? 'p-0' : 'p-0'}>
+          {data && data.recentReferrals.length > 0 ? (
+            <ul className="divide-y divide-slate-50">
+              {data.recentReferrals.map((r) => (
+                <li key={r.id} className="flex items-center justify-between px-5 py-3 text-sm sm:px-6">
+                  <span className="font-mono text-xs text-slate-600">{r.email}</span>
+                  <span className="flex items-center gap-2">
+                    {tag(r.status)}
+                    <span className="text-xs text-slate-400">{shortDate(r.date)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState icon={Users} title="No referrals yet" hint="People who sign up through your link appear here." />
+          )}
         </Panel>
         <Panel title="Commission history" bodyClassName="p-0">
-          <EmptyState
-            icon={History}
-            title="No commissions yet"
-            hint="You earn $30 on every $47 renewal from your referrals."
-            soon={SOON_M2}
-          />
+          {data && data.commissionHistory.length > 0 ? (
+            <ul className="divide-y divide-slate-50">
+              {data.commissionHistory.map((c) => (
+                <li key={c.id} className="flex items-center justify-between px-5 py-3 text-sm sm:px-6">
+                  <span className="font-semibold text-slate-800">{money(c.amountCents)}</span>
+                  <span className="flex items-center gap-2">
+                    {tag(c.status)}
+                    <span className="text-xs text-slate-400">{shortDate(c.date)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState icon={History} title="No commissions yet" hint="You earn $30 on every $47 renewal from your referrals." />
+          )}
         </Panel>
       </div>
+      {err && <p className="text-xs text-rose-500">Couldn't load live stats.</p>}
     </div>
   );
 }
 
 function CommissionsPanel() {
+  const [data, setData] = useState<Awaited<ReturnType<typeof api.commissions>> | null>(null);
+  useEffect(() => {
+    api.commissions().then(setData).catch(() => undefined);
+  }, []);
+  const m = (n: number | undefined) => (n === undefined ? '—' : money(n));
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Wallet" value="$0.00" icon={Wallet} featured hint="available to withdraw" />
-        <StatCard label="Pending" value="$0.00" icon={Clock} hint="30-day hold" />
-        <StatCard label="This month" value="$0.00" icon={CircleDollarSign} hint="total earnings" />
+        <StatCard label="Wallet" value={m(data?.walletCents)} icon={Wallet} featured hint="available to withdraw" />
+        <StatCard label="Pending" value={m(data?.pendingCents)} icon={Clock} hint="30-day hold" />
+        <StatCard label="This month" value={m(data?.thisMonthCents)} icon={CircleDollarSign} hint="commissions earned" />
       </div>
 
       <Panel
@@ -160,12 +223,25 @@ function CommissionsPanel() {
       </Panel>
 
       <Panel title="Transactions" bodyClassName="p-0">
-        <EmptyState
-          icon={Receipt}
-          title="No transactions yet"
-          hint="Your own $1 trial and $47 monthly payments show here — not your referrals'."
-          soon={SOON_M2}
-        />
+        {data && data.transactions.length > 0 ? (
+          <ul className="divide-y divide-slate-50">
+            {data.transactions.map((t) => (
+              <li key={t.id} className="flex items-center justify-between px-5 py-3 text-sm sm:px-6">
+                <span className="text-slate-700">{t.type} payment</span>
+                <span className="flex items-center gap-3">
+                  <span className="font-semibold text-slate-800">{money(t.amountCents)}</span>
+                  <span className="text-xs text-slate-400">{shortDate(t.date)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            icon={Receipt}
+            title="No transactions yet"
+            hint="Your own $1 trial and $47 monthly payments show here, not your referrals'."
+          />
+        )}
       </Panel>
     </div>
   );
@@ -351,6 +427,39 @@ function ProfilePanel() {
 }
 
 function CancelPanel() {
+  const { refresh } = useAuth();
+  const [sub, setSub] = useState<SubscriptionSummary | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.subscription().then((r) => setSub(r.subscription)).catch(() => undefined);
+  }, []);
+
+  const act = (fn: () => Promise<{ subscription: SubscriptionSummary }>, done: string) => async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await fn();
+      setSub(r.subscription);
+      setMsg(done);
+      await refresh();
+    } catch (e) {
+      setMsg(e instanceof ApiError ? e.message : 'Something went wrong.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pendingCancel = sub?.cancelAtPeriodEnd;
+  const periodEnd = sub?.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString(undefined, {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null;
+
   return (
     <Panel className="max-w-2xl">
       <div className="flex items-start gap-3">
@@ -358,26 +467,47 @@ function CancelPanel() {
           <ShieldCheck className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-base font-bold text-slate-900">Cancel your subscription?</h2>
+          <h2 className="text-base font-bold text-slate-900">
+            {pendingCancel ? 'Your subscription is set to cancel' : 'Cancel your subscription?'}
+          </h2>
           <p className="mt-2 text-sm text-slate-500">
-            You keep paid access until the end of your current billing period. After that your
-            account downgrades to free, your affiliate link is removed, and future commissions and
-            referrals move to the admin. You can undo the cancellation any time before the period
-            ends, or reactivate later at $47/month.
+            {pendingCancel ? (
+              <>
+                You keep full access {periodEnd ? `until ${periodEnd}` : 'until the end of this billing period'}.
+                After that your account becomes free, your affiliate link is removed, and future
+                commissions and referrals move to the admin. Change your mind any time before then.
+              </>
+            ) : (
+              <>
+                You keep paid access until the end of your current billing period
+                {periodEnd ? ` (${periodEnd})` : ''}. After that your account downgrades to free,
+                your affiliate link is removed, and future commissions and referrals move to the
+                admin. You can undo the cancellation any time before the period ends, or reactivate
+                later at $47/month.
+              </>
+            )}
           </p>
         </div>
       </div>
+
+      {msg && <Notice tone={msg.includes('wrong') || msg.includes('Invalid') ? 'warn' : 'success'}>{msg}</Notice>}
+
       <div className="mt-5 flex flex-wrap gap-2">
-        <Btn variant="outline" disabled>
-          Never mind, keep my plan
-        </Btn>
-        <Btn className="!bg-rose-600 hover:!bg-rose-700" disabled>
-          Cancel subscription
-        </Btn>
+        {pendingCancel ? (
+          <Btn onClick={act(api.resumeSubscription, "You're all set, your plan continues.")} disabled={busy}>
+            Never mind, keep my plan
+          </Btn>
+        ) : (
+          <Btn
+            className="!bg-rose-600 hover:!bg-rose-700"
+            onClick={act(api.cancelSubscription, 'Cancellation scheduled. You still have access until your billing date.')}
+            disabled={busy || !sub}
+          >
+            {busy ? 'Working…' : 'Cancel subscription'}
+          </Btn>
+        )}
       </div>
-      <p className="mt-3 text-xs text-slate-400">
-        The cancel / undo flow connects to Explodely in Milestone 2.
-      </p>
+      {!sub && <p className="mt-3 text-xs text-slate-400">No active subscription on file.</p>}
     </Panel>
   );
 }

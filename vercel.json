@@ -2,5 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "if [ -n \"$DATABASE_URL\" ]; then node --import tsx scripts/db.ts migrate; fi && next build",
-  "crons": []
+  "crons": [{ "path": "/api/cron/tick", "schedule": "*/15 * * * *" }]
 }

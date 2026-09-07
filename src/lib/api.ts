@@ -93,7 +93,63 @@ export const api = {
     req<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }>(
       `/admin/users?filter=${filter}&page=${page}&q=${encodeURIComponent(q)}`,
     ),
+
+  // --- M2: payments / affiliate ---
+  dashboard: () =>
+    req<{
+      stats: AffiliateStats;
+      recentReferrals: { id: string; email: string; status: string; date: string; source: string | null }[];
+      commissionHistory: {
+        id: string;
+        amountCents: number;
+        kind: string;
+        status: string;
+        date: string;
+        availableAt: string | null;
+      }[];
+    }>('/me/dashboard'),
+  commissions: () =>
+    req<{
+      walletCents: number;
+      pendingCents: number;
+      thisMonthCents: number;
+      lifetimeCents: number;
+      cashouts: unknown[];
+      transactions: { id: string; type: string; amountCents: number; date: string }[];
+    }>('/me/commissions'),
+  subscription: () =>
+    req<{ subscription: SubscriptionSummary | null }>('/me/subscription'),
+  cancelSubscription: () =>
+    req<{ subscription: SubscriptionSummary }>('/me/subscription', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'cancel' }),
+    }),
+  resumeSubscription: () =>
+    req<{ subscription: SubscriptionSummary }>('/me/subscription', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'resume' }),
+    }),
 };
+
+export interface AffiliateStats {
+  totalClicks: number;
+  totalReferrals: number;
+  totalCommissionsCents: number;
+  pendingCents: number;
+  availableCents: number;
+  thisMonthCents: number;
+}
+
+export interface SubscriptionSummary {
+  state: string;
+  priceCents: number;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export const money = (cents: number) =>
+  `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export interface AdminUserRow {
   id: string;

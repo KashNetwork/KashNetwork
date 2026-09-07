@@ -114,7 +114,7 @@ export function AppShell() {
 
   if (loading || !me) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#f6f7f9]">
+      <div className="grid min-h-screen place-items-center bg-[#eceef2]">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
       </div>
     );

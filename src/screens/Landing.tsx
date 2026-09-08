@@ -1,8 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Play, ShieldCheck, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import {
   CheckoutFooter,
   CheckoutGrid,
@@ -13,28 +11,36 @@ import { LiveNotifications } from '@/components/LiveNotifications';
 import { VideoGate } from '@/components/VideoGate';
 import { useRefTracking } from '@/lib/useRefTracking';
 
-// TODO(client): real Wistia video. Placeholder = Big Buck Bunny 480p (~10 min,
-// CORS-open, seekable) so the 1:53 gate and 3:35 reveal have runway. Use the DEV
-// skip buttons on the player.
+// TODO(client): real Wistia video. Placeholder = Big Buck Bunny 480p (~10 min).
 const PLACEHOLDER_VIDEO =
   'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.480p.vp9.webm';
 
-const AVATARS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
+const INK = '#04184E';
+
+/** Dark-blue text with a hand-drawn yellow highlighter behind it. */
+function YellowHighlight({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative inline-block whitespace-nowrap" style={{ color: INK }}>
+      <span
+        aria-hidden
+        className="absolute -inset-x-2 top-[16%] bottom-[16%] -z-0 -rotate-[1.5deg] rounded-[6px]"
+        style={{ background: '#FFE24D' }}
+      />
+      <span className="relative z-[1]">{children}</span>
+    </span>
+  );
+}
 
 export default function Landing({ initialRef }: { initialRef?: string }) {
   const ref = useRefTracking('landing', initialRef);
   const [revealed, setRevealed] = useState(false);
-  const videoRef = useRef<HTMLDivElement>(null);
-
-  const scrollToVideo = () =>
-    videoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-900 antialiased">
       {/* soft ambient wash */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[820px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[760px]"
         style={{
           background:
             'radial-gradient(55% 40% at 50% 0%, rgba(59,130,246,0.14), transparent 70%),' +
@@ -54,95 +60,43 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <nav className="flex items-center justify-between py-5">
-          <span className="flex items-center gap-2 font-display text-lg font-extrabold">
-            <span
-              className="grid h-8 w-8 place-items-center rounded-lg"
-              style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#17A3B8,#22c55e)' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-                <path d="M12 2.6 20.1 7v10L12 21.4 3.9 17V7z" />
-                <circle cx="12" cy="12" r="3.6" />
-              </svg>
-            </span>
-            Kash Network
-          </span>
-          <Link
-            href="/login"
-            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
-          >
-            Log in
-          </Link>
-        </nav>
-
-        <section className="pt-10 text-center sm:pt-14">
-          <div className="mx-auto inline-flex items-center gap-3 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80">
-            <span className="flex -space-x-1.5">
-              {AVATARS.map((c) => (
-                <span
-                  key={c}
-                  className="h-5 w-5 rounded-full ring-2 ring-white"
-                  style={{ background: c }}
-                />
-              ))}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
-              Trusted by members worldwide
-            </span>
+      <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
+        <section className="pb-28 pt-10 text-center sm:pb-16 sm:pt-16">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80">
+            <span className="text-cyan-500">✦</span>
+            Trusted by members worldwide
           </div>
 
-          <h1 className="mx-auto mt-7 max-w-4xl font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-slate-900 sm:text-6xl">
-            Need <span className="text-rose-500">Emergency</span> Cash?
-            <span className="mt-2 block">
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(120deg,#2563eb 0%,#0891b2 45%,#16a34a 100%)' }}
-              >
-                $37 Per Hour Sending Emails
-              </span>
+          <h1 className="mx-auto mt-7 font-display font-extrabold leading-[1.1] tracking-tight text-slate-900">
+            <span
+              className="block whitespace-nowrap"
+              style={{ fontSize: 'clamp(24px, 6.6vw, 46px)', color: INK }}
+            >
+              ⚠️ Need <span style={{ color: '#E5162B' }}>Emergency</span> Cash? ⚠️
+            </span>
+            <span
+              className="mt-3 block whitespace-nowrap"
+              style={{ fontSize: 'clamp(22px, 7.2vw, 58px)' }}
+            >
+              <YellowHighlight>$30 Per Hour Sending Emails</YellowHighlight>
             </span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-xl text-base text-slate-500 sm:text-lg">
-            Watch the 4-minute demo below — see exactly how the done-for-you system works.
+          <p className="mx-auto mt-5 max-w-none text-[15px] font-semibold text-slate-600 sm:text-lg lg:whitespace-nowrap">
+            Watch the 4-minute demo below to see exactly how this done-for-you system works.
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button
-              onClick={scrollToVideo}
-              className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5"
-              style={{
-                backgroundImage: 'linear-gradient(120deg,#16a34a,#0891b2,#2563eb)',
-                boxShadow: '0 18px 40px -16px rgba(8,145,178,0.45)',
-              }}
-            >
-              <Play className="h-4 w-4 fill-current" />
-              Watch the Demo
-            </button>
-            <button
-              onClick={scrollToVideo}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
-            >
-              How it works
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div ref={videoRef} className="relative mx-auto mt-12 w-full max-w-3xl scroll-mt-24">
+          <div className="relative mx-auto mt-9 w-full max-w-3xl">
             <div
               aria-hidden
               className="absolute -inset-4 -z-10 rounded-[32px] opacity-40 blur-2xl"
-              style={{ backgroundImage: 'linear-gradient(120deg,rgba(37,99,235,0.28),rgba(22,163,74,0.24))' }}
+              style={{
+                backgroundImage: 'linear-gradient(120deg,rgba(37,99,235,0.28),rgba(22,163,74,0.24))',
+              }}
             />
             <div className="rounded-[26px] bg-white p-2 shadow-xl ring-1 ring-slate-200/80">
               <VideoGate src={PLACEHOLDER_VIDEO} ref={ref} onRevealContent={() => setRevealed(true)} />
             </div>
-            <p className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              No credit card to watch · $1 to activate · cancel anytime
-            </p>
           </div>
         </section>
       </div>
@@ -150,7 +104,7 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
       {/* revealed at 3:35 */}
       <div
         className={`overflow-hidden transition-all duration-700 ${
-          revealed ? 'mt-16 max-h-[7000px] opacity-100' : 'max-h-0 opacity-0'
+          revealed ? 'mt-14 max-h-[7000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div style={{ background: '#F4F8FF', color: '#0B1220' }}>

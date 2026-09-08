@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { VIDEO_GATE } from '@/shared';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Button, Input } from './ui';
 
 /**
- * Gated video player.
+ * Gated video player with custom controls (no seek bar — viewers can't skip).
+ * Keeps play/pause, mute, and fullscreen. Pauses + shows the email gate at
+ * VIDEO_GATE.emailGateAt; reveals the page at VIDEO_GATE.contentRevealAt.
  *
- * Currently uses an HTML5 <video>. To move to Wistia, swap:
- *   - the <video> element for the Wistia embed
- *   - the 'timeupdate' listener for `video.bind('timechange', ...)`
- *   - `.pause()` / `.play()` for the Wistia player API equivalents
- * The gating logic (pause at emailGateAt, reveal at contentRevealAt) is unchanged.
+ * To move to Wistia: swap the <video> for the embed and the 'timeupdate'
+ * listener for the Wistia player API. The gating logic is unchanged.
  */
 export function VideoGate({
   src,
@@ -24,22 +24,15 @@ export function VideoGate({
   ref?: string;
   onRevealContent: () => void;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { me, setMe } = useAuth();
-  const alreadyLead = Boolean(me);
 
-  // skip buttons: on in dev, and on the deployed site while a placeholder video
-  // is in use (any host that isn't the real domain, or ?preview in the URL).
-  const [showSkip, setShowSkip] = useState(process.env.NODE_ENV !== 'production');
-  useEffect(() => {
-    const h = window.location.hostname;
-    const real = h === 'kash.network' || h === 'www.kash.network';
-    if (!real || new URLSearchParams(window.location.search).has('preview')) setShowSkip(true);
-  }, []);
-
-  const [unlocked, setUnlocked] = useState(alreadyLead);
+  const [unlocked, setUnlocked] = useState(Boolean(me));
   const [gateVisible, setGateVisible] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,20 +50,36 @@ export function VideoGate({
         setGateVisible(true);
       }
     };
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
     v.addEventListener('timeupdate', onTime);
-    return () => v.removeEventListener('timeupdate', onTime);
+    v.addEventListener('play', onPlay);
+    v.addEventListener('pause', onPause);
+    return () => {
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('play', onPlay);
+      v.removeEventListener('pause', onPause);
+    };
   }, [unlocked, revealed, onRevealContent]);
 
-  function seekTo(seconds: number) {
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v || gateVisible) return;
+    if (v.paused) void v.play();
+    else v.pause();
+  };
+  const toggleMute = () => {
     const v = videoRef.current;
     if (!v) return;
-    const go = () => {
-      v.currentTime = Math.min(seconds, (v.duration || seconds) - 0.1);
-      void v.play();
-    };
-    if (v.readyState >= 1) go();
-    else v.addEventListener('loadedmetadata', go, { once: true });
-  }
+    v.muted = !v.muted;
+    setMuted(v.muted);
+  };
+  const toggleFullscreen = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void el.requestFullscreen?.();
+  };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,31 +92,79 @@ export function VideoGate({
       setGateVisible(false);
       void videoRef.current?.play();
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : 'Something went wrong — please try again.',
-      );
+      setError(err instanceof ApiError ? err.message : 'Something went wrong — please try again.');
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-black ring-1 ring-black/5">
+    <div ref={wrapRef} className="group relative overflow-hidden rounded-2xl bg-black ring-1 ring-black/5">
       <video
         ref={videoRef}
         src={src}
-        controls={!gateVisible}
         playsInline
+        disablePictureInPicture
+        controlsList="nodownload noplaybackrate noremoteplayback"
+        onClick={togglePlay}
         className="aspect-video w-full"
       />
 
+      {/* center play button when paused (gate not up) */}
+      {!playing && !gateVisible && (
+        <button
+          type="button"
+          onClick={togglePlay}
+          aria-label="Play"
+          className="absolute inset-0 grid place-items-center bg-black/25 transition hover:bg-black/30"
+        >
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-white/95 shadow-lg sm:h-20 sm:w-20">
+            <Play className="ml-1 h-7 w-7 fill-[#04184E] text-[#04184E] sm:h-9 sm:w-9" />
+          </span>
+        </button>
+      )}
+
+      {/* custom control bar — no seek, no timer, no settings menu */}
+      {!gateVisible && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="pointer-events-auto rounded-md p-1.5 text-white hover:bg-white/15"
+            aria-label={playing ? 'Pause' : 'Play'}
+          >
+            {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={toggleMute}
+            className="pointer-events-auto rounded-md p-1.5 text-white hover:bg-white/15"
+            aria-label={muted ? 'Unmute' : 'Mute'}
+          >
+            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="pointer-events-auto ml-auto rounded-md p-1.5 text-white hover:bg-white/15"
+            aria-label="Fullscreen"
+          >
+            <Maximize2 className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      {/* email gate — fits inside the video on every screen size */}
       {gateVisible && !unlocked && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6">
-          <form onSubmit={submit} className="w-full max-w-sm rounded-xl bg-white p-6 text-center">
-            <h3 className="text-lg font-bold text-foreground">Want to see what happened next?</h3>
-            <p className="mt-1.5 text-sm text-slate-600">
+        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/85 p-3 sm:p-6">
+          <form
+            onSubmit={submit}
+            className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl sm:p-6"
+          >
+            <h3 className="text-base font-bold text-[#04184E] sm:text-lg">
+              Want to see what happened next?
+            </h3>
+            <p className="mt-1 text-[13px] leading-snug text-slate-600 sm:text-sm">
               Enter your email to continue watching and unlock your demo account…
             </p>
             <Input
@@ -117,36 +174,13 @@ export function VideoGate({
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-4"
+              className="mt-3"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-            <Button type="submit" disabled={submitting} className="mt-4 w-full">
+            <Button type="submit" disabled={submitting} className="mt-3 w-full">
               {submitting ? 'Checking…' : 'CONTINUE →'}
             </Button>
           </form>
-        </div>
-      )}
-
-      {showSkip && !unlocked && (
-        <div className="absolute right-2 top-2 flex gap-1 rounded bg-white/90 p-1 text-xs shadow">
-          <span className="px-1 text-slate-400">preview:</span>
-          <button
-            className="rounded bg-slate-200 px-1.5 hover:bg-slate-300"
-            onClick={() => seekTo(VIDEO_GATE.emailGateAt - 3)}
-          >
-            skip to gate
-          </button>
-        </div>
-      )}
-      {showSkip && unlocked && !revealed && (
-        <div className="absolute right-2 top-2 flex gap-1 rounded bg-white/90 p-1 text-xs shadow">
-          <span className="px-1 text-slate-400">preview:</span>
-          <button
-            className="rounded bg-slate-200 px-1.5 hover:bg-slate-300"
-            onClick={() => seekTo(VIDEO_GATE.contentRevealAt - 3)}
-          >
-            skip to reveal
-          </button>
         </div>
       )}
     </div>

@@ -57,8 +57,8 @@ export function LiveNotifications({ location }: { location: 'landing' | 'sales' 
 
   if (!current) return null;
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-50 max-w-[320px]">
-      <div className="animate-[fadeIn_.3s_ease] rounded-xl bg-white p-4 shadow-lg ring-1 ring-slate-200">
+    <div className="pointer-events-none fixed bottom-4 left-3 z-50 w-[min(300px,calc(100vw-1.5rem))] sm:left-4">
+      <div className="animate-[fadeIn_.3s_ease] rounded-xl bg-white p-3.5 shadow-lg ring-1 ring-slate-200 sm:p-4">
         <div className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
             ✦

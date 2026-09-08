@@ -29,14 +29,8 @@ export interface NavGroup {
 function KashLogo() {
   return (
     <span className="flex items-center gap-2.5">
-      <span
-        className="grid h-9 w-9 place-items-center rounded-2xl shadow-[0_6px_16px_-6px_rgba(20,102,208,0.6)]"
-        style={{ backgroundImage: 'linear-gradient(135deg,#2A7BEA,#17A3B8,#22c55e)' }}
-      >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.1">
-          <path d="M12 2.6 20.1 7v10L12 21.4 3.9 17V7z" />
-          <circle cx="12" cy="12" r="3.6" />
-        </svg>
+      <span className="grid h-9 w-9 place-items-center overflow-hidden rounded-2xl bg-black shadow-[0_6px_16px_-6px_rgba(20,102,208,0.6)]">
+        <img src="/logo.jpeg" alt="Kash Network" className="h-full w-full object-cover" />
       </span>
       <span className="font-display text-[16px] font-bold tracking-tight text-slate-900">
         Kash Network

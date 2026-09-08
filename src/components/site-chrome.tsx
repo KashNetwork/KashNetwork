@@ -13,23 +13,16 @@ export const brandGrad = "linear-gradient(135deg, #2A7BEA 0%, #17A3B8 100%)";
 export function KashMark({ size = 32 }: { size?: number }) {
   return (
     <span
-      className="shrink-0 rounded-full flex items-center justify-center"
-      style={{ background: brandGrad, height: size, width: size }}
+      className="shrink-0 overflow-hidden rounded-full"
+      style={{ height: size, width: size, background: "#000" }}
     >
-      <svg
-        width={size * 0.56}
-        height={size * 0.56}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth={1.9}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 2.6 20.1 7v10L12 21.4 3.9 17V7z" />
-        <circle cx="12" cy="12" r="3.6" />
-      </svg>
+      <img
+        src="/logo.jpeg"
+        alt="Kash Network"
+        width={size}
+        height={size}
+        className="h-full w-full object-cover"
+      />
     </span>
   );
 }

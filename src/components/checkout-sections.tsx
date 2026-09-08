@@ -11,9 +11,9 @@ import {
   MapPin,
 } from "lucide-react";
 // Real testimonial headshots live in /public/sales/ (see public/sales/README.md).
-const avatarJehoyakim = { url: "/sales/testimonial-jehoyakim.png" };
-const avatarGalib = { url: "/sales/testimonial-galib.png" };
-const avatarTay = { url: "/sales/testimonial-tay.png" };
+const avatarJehoyakim = { url: "/sales/testimonial-jehoyakim.jpg" };
+const avatarGalib = { url: "/sales/testimonial-galib.jpg" };
+const avatarTay = { url: "/sales/testimonial-tay.jpg" };
 
 const ink = "#0B1220";
 const navySub = "#475569";

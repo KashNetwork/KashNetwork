@@ -1,17 +1,20 @@
 # Sales page images
 
-Drop the real client photos here with these EXACT filenames. They are referenced
-by `src/screens/SalesPage.tsx` (`IMAGES` map) and appear on `/activate`.
+Live mapping (client supplied the source files; copies with the names below are
+what the code references):
 
-| File            | Where it shows on the page                                    | Client attachment |
-|-----------------|--------------------------------------------------------------|-------------------|
-| `founder.jpg`   | Round portrait next to "So I built a 'new system'..."        | Harley Carter photo |
-| `results-1.png` | First wide "commission results" screenshot (upper page)      | Explodely $100 commissions screenshot |
-| `results-2.png` | Second wide "commission results" screenshot (mid page)       | Gmail inbox / replies screenshot |
-| `closing.jpg`   | Tall portrait in the closing section                         | Harley Carter photo (can reuse founder) |
+| Served file                   | Source file            | Where it shows |
+|-------------------------------|------------------------|----------------|
+| `founder.jpg`                 | `Woman.jpeg`           | round portrait in the life-story section (`/activate`) |
+| `closing.jpg`                 | `Woman.jpeg`           | tall portrait in the closing "— Harley Carter" section |
+| `results-1.jpg`               | `money dashboard.jpeg` | "my inbox lights up with commission notifications" screenshot |
+| `results-2.jpg`               | `money dashboard.jpeg` | "$100 in commissions — Jehoyakim Jena" screenshot |
+| `testimonial-jehoyakim.jpg`   | `another man.jpeg`     | Verified Results card (landing reveal) |
+| `testimonial-galib.jpg`       | `Man.jpeg`             | Verified Results card (landing reveal) |
+| `testimonial-tay.jpg`         | `Woman.jpeg`           | Verified Results card (landing reveal) |
 
-Optional testimonial headshots (only if we wire the testimonial section):
-`testimonial-jehoyakim.png`, `testimonial-galib.png`, `testimonial-tay.png`
+`logo.jpeg` (green "K" money-tree) is not placed anywhere yet — it's a brand
+logo, not a page photo. Say where it should go if you want it used.
 
-After adding files, redeploy:
-`npx vercel deploy --prod --yes --token <token>`
+To swap any image: replace the served file (keep the name) and redeploy
+`npx vercel deploy --prod --yes --token <token>`.

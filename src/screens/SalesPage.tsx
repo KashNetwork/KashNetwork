@@ -14,8 +14,8 @@ const CHECKOUT = "/api/checkout/start";
    names and they show up automatically (see public/sales/README.md). */
 const IMAGES: Record<string, string> = {
   founder: "/sales/founder.jpg",
-  results1: "/sales/results-1.png",
-  results2: "/sales/results-2.png",
+  results1: "/sales/results-1.jpg",
+  results2: "/sales/results-2.jpg",
   closing: "/sales/closing.jpg",
 };
 

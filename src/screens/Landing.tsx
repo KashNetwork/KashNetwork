@@ -60,33 +60,33 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
-        <section className="pb-28 pt-10 text-center sm:pb-16 sm:pt-16">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80">
+      <div className="relative mx-auto w-full max-w-5xl px-3 sm:px-6">
+        <section className="mx-auto flex min-h-[100svh] flex-col items-center justify-center pb-24 pt-4 text-center sm:min-h-0 sm:pb-16 sm:pt-16">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80 sm:text-sm">
             <span className="text-cyan-500">✦</span>
             Trusted by members worldwide
           </div>
 
-          <h1 className="mx-auto mt-7 font-display font-extrabold leading-[1.1] tracking-tight text-slate-900">
+          <h1 className="mt-6 font-display font-extrabold leading-[1.12] tracking-tight text-slate-900 sm:mt-7">
             <span
               className="block whitespace-nowrap"
-              style={{ fontSize: 'clamp(24px, 6.6vw, 46px)', color: INK }}
+              style={{ fontSize: 'clamp(19px, 5.6vw, 46px)', color: INK, letterSpacing: '-0.01em' }}
             >
               ⚠️ Need <span style={{ color: '#E5162B' }}>Emergency</span> Cash? ⚠️
             </span>
             <span
               className="mt-3 block whitespace-nowrap"
-              style={{ fontSize: 'clamp(22px, 7.2vw, 58px)' }}
+              style={{ fontSize: 'clamp(15px, 5.7vw, 58px)', letterSpacing: '-0.02em' }}
             >
               <YellowHighlight>$30 Per Hour Sending Emails</YellowHighlight>
             </span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-none text-[15px] font-semibold text-slate-600 sm:text-lg lg:whitespace-nowrap">
+          <p className="mx-auto mt-5 max-w-md text-[14px] font-semibold text-slate-600 sm:max-w-none sm:text-lg lg:whitespace-nowrap">
             Watch the 4-minute demo below to see exactly how this done-for-you system works.
           </p>
 
-          <div className="relative mx-auto mt-9 w-full max-w-3xl">
+          <div className="relative mx-auto mt-8 w-full max-w-3xl sm:mt-9">
             <div
               aria-hidden
               className="absolute -inset-4 -z-10 rounded-[32px] opacity-40 blur-2xl"
@@ -94,7 +94,7 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
                 backgroundImage: 'linear-gradient(120deg,rgba(37,99,235,0.28),rgba(22,163,74,0.24))',
               }}
             />
-            <div className="rounded-[26px] bg-white p-2 shadow-xl ring-1 ring-slate-200/80">
+            <div className="rounded-[22px] bg-white p-1.5 shadow-xl ring-1 ring-slate-200/80 sm:rounded-[26px] sm:p-2">
               <VideoGate src={PLACEHOLDER_VIDEO} ref={ref} onRevealContent={() => setRevealed(true)} />
             </div>
           </div>

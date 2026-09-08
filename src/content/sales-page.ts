@@ -39,7 +39,7 @@ export const salesSections: Section[] = [
    },
    {
     "k": "h1",
-    "x": "⚠️ Need {{rgb(208, 2, 27)}}Emergency{{/}} Cash? ⚠️ {{/}}\n$37 Per Hour Sending Emails{{/}}",
+    "x": "⚠️ Need {{rgb(208, 2, 27)}}Emergency{{/}} Cash? ⚠️ {{/}}\n$30 Per Hour Sending Emails{{/}}",
      "size": "50",
     "w": "800",
     "c": "rgb(4, 24, 78)",
@@ -104,7 +104,7 @@ export const salesSections: Section[] = [
    {
     "k": "bullet",
     "card": true,
-    "x": "**Step 1:** Get Your Personal Affiliate Link (DONE-FOR-YOU Website) — Earn $37 monthly residual commissions when people join through your link.",
+    "x": "**Step 1:** Get Your Unique Affiliate Link (DONE-FOR-YOU Website) — Earn $30 monthly residual commissions when people join through your link.",
      "size": "22",
     "w": "600"
    },
@@ -617,7 +617,7 @@ export const salesSections: Section[] = [
    {
     "k": "bullet",
     "card": false,
-    "x": "**You Get A Personal Affiliate Link (DONE-FOR-YOU Website) —** so you can earn $37 monthly residual commissions when people join through your link.",
+    "x": "**You Get A Unique Affiliate Link (DONE-FOR-YOU Website) —** so you can earn $30 monthly residual commissions when people join through your link.",
     "size": "22",
     "w": "500"
    },
@@ -1771,7 +1771,7 @@ export const salesSections: Section[] = [
    },
    {
     "k": "p",
-    "x": "**That's a $37 commission. Maybe two. Maybe more.**",
+    "x": "**That's a $30 commission. Maybe two. Maybe more.**",
     "size": "22",
     "w": "500",
     "c": "rgb(4, 24, 78)",

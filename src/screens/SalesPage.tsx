@@ -5,22 +5,18 @@ import { salesSections, type Block, type Section } from "@/content/sales-page";
 import { RedUnderline, YellowSmear } from "@/components/text-accents";
 import { LiveNotifications } from "@/components/LiveNotifications";
 
-import founderAsset from "@/assets/founder.png.asset.json";
-import results1Asset from "@/assets/results-1.png.asset.json";
-import results2Asset from "@/assets/results-2.png.asset.json";
-import closingAsset from "@/assets/closing.jpg.asset.json";
-
-
 const ink = "rgb(4, 24, 78)";
 const lime = "#75ef4e";
 const limeGrad = "linear-gradient(#7ef450 0%, #5be030 100%)";
 const CHECKOUT = "/api/checkout/start";
 
+/* Real client photos live in /public/sales/. Drop the files in with these exact
+   names and they show up automatically (see public/sales/README.md). */
 const IMAGES: Record<string, string> = {
-  founder: founderAsset.url,
-  results1: results1Asset.url,
-  results2: results2Asset.url,
-  closing: closingAsset.url,
+  founder: "/sales/founder.jpg",
+  results1: "/sales/results-1.png",
+  results2: "/sales/results-2.png",
+  closing: "/sales/closing.jpg",
 };
 
 /* ---------- inline rich text: **bold**, _italic_, {{rgb(...)}}…{{/}} ---------- */
@@ -84,10 +80,9 @@ const fs = (size: number | string) => {
 function Text({ b, tag }: { b: Block; tag: "h1" | "h2" | "p" }) {
   const Tag = tag;
   const isHeading = tag !== "p";
-  const isSalesPromise = tag === "h1" && b.x?.includes("$37 Per Hour Sending Emails");
+  const isSalesPromise = tag === "h1" && b.x?.includes("$30 Per Hour Sending Emails");
   const isAttentionMarker = tag === "p" && b.x?.startsWith("ATTENTION:");
   const isDemoLine = tag === "p" && b.x?.startsWith("Click ▶️");
-  const isAiCopy = tag === "p" && b.x?.startsWith("The A.I. assistant handles");
   const isMemberResultDisclaimer = tag === "p" && b.x?.startsWith("Member result shown.");
   if (isSalesPromise) {
     return (
@@ -107,29 +102,11 @@ function Text({ b, tag }: { b: Block; tag: "h1" | "h2" | "p" }) {
           className="mt-3 block font-display font-extrabold"
           style={{ fontSize: "clamp(29px, 7.3vw, 68px)", letterSpacing: "-0.03em" }}
         >
-          <YellowSmear>$37 Per Hour Sending Emails</YellowSmear>
+          <YellowSmear>$30 Per Hour Sending Emails</YellowSmear>
         </span>
       </h1>
     );
   }
-  if (isAiCopy) {
-    return (
-      <p
-        className="w-full whitespace-pre-line font-sans"
-        style={{
-          fontSize: "clamp(13px, 4vw, 35px)",
-          fontWeight: b.w ? (Number(b.w) as number) : undefined,
-          color: b.c ?? ink,
-          textAlign: (b.a as "left" | "center") ?? "left",
-          lineHeight: b.lh ?? undefined,
-          letterSpacing: b.ls ?? undefined,
-        }}
-      >
-        <RichText text={b.x ?? ""} />
-      </p>
-    );
-  }
-
   if (isDemoLine) {
     return (
       <p

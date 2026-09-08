@@ -10,9 +10,10 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import avatarJehoyakim from "@/assets/testimonial-jehoyakim.png.asset.json";
-import avatarGalib from "@/assets/testimonial-galib.png.asset.json";
-import avatarTay from "@/assets/testimonial-tay.png.asset.json";
+// Real testimonial headshots live in /public/sales/ (see public/sales/README.md).
+const avatarJehoyakim = { url: "/sales/testimonial-jehoyakim.png" };
+const avatarGalib = { url: "/sales/testimonial-galib.png" };
+const avatarTay = { url: "/sales/testimonial-tay.png" };
 
 const ink = "#0B1220";
 const navySub = "#475569";
@@ -298,7 +299,7 @@ export function CheckoutGrid({
 
             <ul className="mt-6 space-y-5">
               {[
-                "You Will Get Your Personal Affiliate Link (DONE-FOR-\nYOU Website) — Earn $37 monthly residual commissions\nwhen people join through your link.",
+                "You Will Get Your Unique Affiliate Link (DONE-FOR-\nYOU Website) — Earn $30 monthly residual commissions\nwhen people join through your link.",
                 "Your Affiliate Link Gets Shared — You get instant access\nto our trusted email advertising sources. These sources\nwill write the email ad for you and send it to\nTHOUSANDS of people interested in earning extra\nincome online.",
                 "Our A.I. assistant replies to emails from interested\npeople on your behalf to turn conversations into\ncommissions — 24 hours a day, 7 days a week…\nIT NEVER SLEEPS!",
                 "Unlimited Support — 24 / 7",

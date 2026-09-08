@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import highlightAsset from "@/assets/yellow-highlight.png.asset.json";
 
 /** Hand-drawn style red underline beneath the text. */
 export function RedUnderline({ children }: { children: ReactNode }) {
@@ -24,25 +23,18 @@ export function RedUnderline({ children }: { children: ReactNode }) {
   );
 }
 
-/** Yellow highlighter smear painted behind the text using the uploaded marker PNG. */
+/**
+ * Hand-drawn style yellow highlighter behind the text. Same marker look as the
+ * landing-page headline: a slightly skewed, rounded band of solid marker yellow
+ * that multiplies over the ink so the letters stay readable.
+ */
 export function YellowSmear({ children }: { children: ReactNode }) {
   return (
-    <span className="relative inline-block whitespace-nowrap">
-      <img
-        src={highlightAsset.url}
-        alt=""
+    <span className="relative inline-block whitespace-nowrap" style={{ color: "rgb(4, 24, 78)" }}>
+      <span
         aria-hidden="true"
-        className="pointer-events-none absolute z-0 select-none"
-        style={{
-          left: "-7%",
-          top: "-0.78em",
-          /* em-based so the smear scales with the headline on small screens
-             (6.9em x 2.75em === 469px x 187px at the desktop 68px headline) */
-          width: "6.9em",
-          maxWidth: "none",
-          height: "2.75em",
-          objectFit: "fill",
-        }}
+        className="absolute -inset-x-2 top-[16%] bottom-[16%] -z-0 -rotate-[1.5deg] rounded-[6px]"
+        style={{ background: "#FFE24D" }}
       />
       <span className="relative z-[1]">{children}</span>
     </span>

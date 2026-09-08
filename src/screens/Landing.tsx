@@ -76,9 +76,9 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
             </span>
             <span
               className="mt-3 block whitespace-nowrap"
-              style={{ fontSize: 'clamp(15px, 5.7vw, 58px)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: 'clamp(15px, 5.7vw, 58px)', letterSpacing: '-0.02em', color: INK }}
             >
-              <YellowHighlight>$30 Per Hour Sending Emails</YellowHighlight>
+              <YellowHighlight>$30 Per Hour</YellowHighlight> Sending Emails
             </span>
           </h1>
 

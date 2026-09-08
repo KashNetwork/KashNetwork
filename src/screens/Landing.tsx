@@ -61,7 +61,7 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
       />
 
       <div className="relative mx-auto w-full max-w-5xl px-3 sm:px-6">
-        <section className="mx-auto flex min-h-[100svh] flex-col items-center justify-center pb-24 pt-4 text-center sm:min-h-0 sm:pb-16 sm:pt-16">
+        <section className="mx-auto flex min-h-[100svh] flex-col items-center justify-start pb-24 pt-[15vh] text-center sm:min-h-0 sm:justify-center sm:pb-16 sm:pt-16">
           <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80 sm:text-sm">
             <span className="text-cyan-500">✦</span>
             Trusted by members worldwide

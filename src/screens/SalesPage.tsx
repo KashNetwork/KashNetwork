@@ -100,9 +100,9 @@ function Text({ b, tag }: { b: Block; tag: "h1" | "h2" | "p" }) {
         </span>
         <span
           className="mt-3 block font-display font-extrabold"
-          style={{ fontSize: "clamp(29px, 7.3vw, 68px)", letterSpacing: "-0.03em" }}
+          style={{ fontSize: "clamp(29px, 7.3vw, 68px)", letterSpacing: "-0.03em", color: ink }}
         >
-          <YellowSmear>$30 Per Hour Sending Emails</YellowSmear>
+          <YellowSmear>$30 Per Hour</YellowSmear> Sending Emails
         </span>
       </h1>
     );
@@ -329,7 +329,7 @@ function Img({ b }: { b: Block }) {
             aspectRatio: `${size} / ${b.h ?? size}`,
           }}
         >
-          <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+          <img src={src} alt={alt} className="h-full w-full object-cover" style={{ objectPosition: "50% 12%" }} loading="lazy" />
         </span>
         {/* desktop: original floated portrait */}
         <span
@@ -344,7 +344,7 @@ function Img({ b }: { b: Block }) {
             margin: float === "right" ? "10px 0 20px 28px" : "6px 24px 20px 0",
           }}
         >
-          <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+          <img src={src} alt={alt} className="h-full w-full object-cover" style={{ objectPosition: "50% 12%" }} loading="lazy" />
         </span>
       </>
     );
@@ -472,7 +472,7 @@ function BlockView({ b }: { b: Block }) {
         return (
           <div className="grid w-full grid-cols-1 items-stretch gap-6 lg:grid-cols-[254px_minmax(0,1fr)]">
             <div className="mx-auto h-[200px] w-[180px] overflow-hidden rounded-[18px] border-[3px] border-[#2460e8] sm:h-[236px] sm:w-[212px] lg:mx-0 lg:h-full lg:min-h-[335px] lg:w-auto">
-              <img src={IMAGES[image.src ?? ""]} alt="Harley Carter" className="h-full w-full object-cover" loading="lazy" />
+              <img src={IMAGES[image.src ?? ""]} alt="Harley Carter" className="h-full w-full object-cover" style={{ objectPosition: "50% 12%" }} loading="lazy" />
             </div>
             <div className="flex min-w-0 items-center"><BlockView b={copy} /></div>
           </div>

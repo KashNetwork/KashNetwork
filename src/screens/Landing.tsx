@@ -8,6 +8,7 @@ import {
   VerifiedResults,
 } from '@/components/checkout-sections';
 import { LiveNotifications } from '@/components/LiveNotifications';
+import { YellowSmear } from '@/components/text-accents';
 import { VideoGate } from '@/components/VideoGate';
 import { useRefTracking } from '@/lib/useRefTracking';
 
@@ -16,20 +17,6 @@ const PLACEHOLDER_VIDEO =
   'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.480p.vp9.webm';
 
 const INK = '#04184E';
-
-/** Dark-blue text with a hand-drawn yellow highlighter behind it. */
-function YellowHighlight({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="relative inline-block whitespace-nowrap" style={{ color: INK }}>
-      <span
-        aria-hidden
-        className="absolute -inset-x-2 top-[16%] bottom-[16%] -z-0 -rotate-[1.5deg] rounded-[6px]"
-        style={{ background: '#FFE24D' }}
-      />
-      <span className="relative z-[1]">{children}</span>
-    </span>
-  );
-}
 
 export default function Landing({ initialRef }: { initialRef?: string }) {
   const ref = useRefTracking('landing', initialRef);
@@ -78,7 +65,7 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
               className="mt-3 block whitespace-nowrap"
               style={{ fontSize: 'clamp(15px, 5.7vw, 58px)', letterSpacing: '-0.02em', color: INK }}
             >
-              <YellowHighlight>$30 Per Hour</YellowHighlight> Sending Emails
+              <YellowSmear>$30 Per Hour</YellowSmear> Sending Emails
             </span>
           </h1>
 

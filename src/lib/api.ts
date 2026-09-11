@@ -93,6 +93,10 @@ export const api = {
     req<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }>(
       `/admin/users?filter=${filter}&page=${page}&q=${encodeURIComponent(q)}`,
     ),
+  adminSupportTickets: (page = 1) =>
+    req<{ rows: AdminSupportTicketRow[]; total: number; page: number; pageSize: number }>(
+      `/admin/support?page=${page}`,
+    ),
 
   // --- M2: payments / affiliate ---
   dashboard: () =>
@@ -163,4 +167,14 @@ export interface AdminUserRow {
   created_at: string;
   referral_count: number;
   total_earned_cents: number;
+}
+
+export interface AdminSupportTicketRow {
+  id: string;
+  profile_id: string | null;
+  from_email: string;
+  subject: string | null;
+  message: string;
+  status: string;
+  created_at: string;
 }

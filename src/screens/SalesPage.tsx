@@ -14,7 +14,7 @@ const CHECKOUT = "/api/checkout/start";
    names and they show up automatically (see public/sales/README.md). */
 const IMAGES: Record<string, string> = {
   founder: "/sales/founder.jpg",
-  results1: "/sales/results-1.jpg",
+  results1: "/sales/inbox.jpg",
   results2: "/sales/results-2.jpg",
   closing: "/sales/closing.jpg",
 };
@@ -84,6 +84,22 @@ function Text({ b, tag }: { b: Block; tag: "h1" | "h2" | "p" }) {
   const isAttentionMarker = tag === "p" && b.x?.startsWith("ATTENTION:");
   const isDemoLine = tag === "p" && b.x?.startsWith("Click ▶️");
   const isMemberResultDisclaimer = tag === "p" && b.x?.startsWith("Member result shown.");
+  const isEasyMode = tag === "h2" && b.x === "Email + A.I. = EASY MODE";
+  if (isEasyMode) {
+    return (
+      <h2
+        className="w-full whitespace-nowrap font-display text-center font-extrabold"
+        style={{
+          fontSize: "clamp(15px, 6.4vw, 50px)",
+          color: b.c ?? ink,
+          lineHeight: b.lh ?? "1.05em",
+          letterSpacing: b.ls ?? "-0.04em",
+        }}
+      >
+        <RichText text={b.x ?? ""} />
+      </h2>
+    );
+  }
   if (isSalesPromise) {
     return (
       <h1
@@ -583,7 +599,7 @@ function SectionView({ s }: { s: Section }) {
               fontSize: fs(27),
               fontWeight: 800,
               color: ink,
-              lineHeight: "1.55em",
+              lineHeight: "1.85em",
               letterSpacing: "0.015em",
             }}
           >
@@ -595,7 +611,6 @@ function SectionView({ s }: { s: Section }) {
             </span>
             <br />
             60 SECONDS to get set up and ready to earn commissions!
-            <br />
             <br />
             <br />
             <span style={{ fontSize: fs(38), letterSpacing: "-0.035em" }}>Here’s how it works:</span>

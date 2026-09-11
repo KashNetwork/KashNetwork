@@ -49,12 +49,12 @@ export const salesSections: Section[] = [
    },
     {
      "k": "p",
-     "x": "Click ▶️ “PLAY” to watch the 4-minute video below — see how it works…",
+     "x": "Click ▶️ “PLAY” to watch the 4-minute video below to see how it works…",
       "size": "22",
       "w": "600",
      "c": "rgb(4, 24, 78)",
      "a": "center",
-     "lh": "1.35em",
+     "lh": "1.5em",
      "ls": "-0.02em"
     },
    {
@@ -172,7 +172,7 @@ export const salesSections: Section[] = [
     "w": "800",
     "c": "rgb(4, 24, 78)",
     "a": "center",
-    "lh": "1.1em",
+    "lh": "1.25em",
     "ls": "-0.04em"
    },
    {
@@ -309,7 +309,7 @@ export const salesSections: Section[] = [
     "w": "800",
     "c": "rgb(4, 24, 78)",
     "a": "center",
-    "lh": "1.12em",
+    "lh": "1.28em",
     "ls": "-0.04em"
    },
    {
@@ -399,7 +399,7 @@ export const salesSections: Section[] = [
     "w": "800",
     "c": "rgb(4, 24, 78)",
     "a": "center",
-    "lh": "1.12em",
+    "lh": "1.28em",
     "ls": "-0.04em"
    },
    {
@@ -830,7 +830,7 @@ export const salesSections: Section[] = [
    },
    {
     "k": "p",
-    "x": "The A.I. assistant handles the email\nconversations for you, 24/7 — so you can\njust check your commission notifications.\u00a0🤑",
+    "x": "The A.I. assistant handles the email conversations for you, 24/7 — so you can just check your commission notifications.\u00a0🤑",
     "size": "35",
     "w": "700",
     "c": "rgb(117, 239, 78)",
@@ -1292,7 +1292,7 @@ export const salesSections: Section[] = [
     "w": "800",
     "c": "rgb(4, 24, 78)",
     "a": "center",
-    "lh": "1.12em",
+    "lh": "1.28em",
     "ls": "-0.04em"
    },
    {
@@ -1525,7 +1525,7 @@ export const salesSections: Section[] = [
     "w": "800",
     "c": "rgb(255, 255, 255)",
     "a": "center",
-    "lh": "1.08em",
+    "lh": "1.22em",
     "ls": "-0.04em"
    },
    {

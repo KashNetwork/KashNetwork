@@ -65,6 +65,10 @@ export interface Repo {
     subject: string | null;
     message: string;
   }): Promise<SupportTicketRow>;
+  listSupportTickets(params: {
+    page: number;
+    pageSize: number;
+  }): Promise<{ rows: SupportTicketRow[]; total: number }>;
 
   // --- notifications ---
   listNotifications(location: 'landing' | 'sales'): Promise<NotificationRow[]>;

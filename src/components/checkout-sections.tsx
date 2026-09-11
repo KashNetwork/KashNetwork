@@ -103,11 +103,11 @@ export function CheckoutGrid({
       }
     >
       <div
-        className={showPanel ? "grid items-start gap-6 lg:grid-cols-2" : "mx-auto w-full"}
+        className={showPanel ? "grid gap-6 lg:grid-cols-2 lg:items-stretch" : "mx-auto w-full"}
         style={showPanel ? undefined : { maxWidth: 800 }}
       >
         <div
-          className={`flex min-w-0 flex-col rounded-[22px] bg-white p-5 sm:p-9 ${wide ? "" : "lg:h-[882px]"}`}
+          className={`flex h-full min-w-0 flex-col rounded-[22px] bg-white p-5 sm:p-9`}
           style={
             wide
               ? {
@@ -290,18 +290,17 @@ export function CheckoutGrid({
             }}
           >
             <h2
-              className="text-center font-display font-extrabold sm:text-left"
-              style={{ fontSize: "clamp(22px, 4.6vw, 29px)", lineHeight: "1.3", letterSpacing: "-0.02em" }}
+              className="whitespace-nowrap text-center font-display font-extrabold sm:text-left"
+              style={{ fontSize: "clamp(14px, 4.6vw, 29px)", lineHeight: "1.3", letterSpacing: "-0.02em" }}
             >
               60-Second Setup • What's Included?
-
             </h2>
 
             <ul className="mt-6 space-y-5">
               {[
-                "You Will Get Your Unique Affiliate Link (DONE-FOR-\nYOU Website) — Earn $30 monthly residual commissions\nwhen people join through your link.",
-                "Your Affiliate Link Gets Shared — You get instant access\nto our trusted email advertising sources. These sources\nwill write the email ad for you and send it to\nTHOUSANDS of people interested in earning extra\nincome online.",
-                "Our A.I. assistant replies to emails from interested\npeople on your behalf to turn conversations into\ncommissions — 24 hours a day, 7 days a week…\nIT NEVER SLEEPS!",
+                "You Will Get Your Unique Affiliate Link (DONE-FOR-YOU Website) — Earn $30 monthly residual commissions when people join through your link.",
+                "Your Affiliate Link Gets Shared — You get instant access to our trusted email advertising sources. These sources will write the email ad for you and send it to THOUSANDS of people interested in earning extra income online.",
+                "Our A.I. assistant replies to emails from interested people on your behalf to turn conversations into commissions — 24 hours a day, 7 days a week… IT NEVER SLEEPS!",
                 "Unlimited Support — 24 / 7",
                 "Access for 7 days for just $1",
               ].map((b) => (
@@ -311,7 +310,7 @@ export function CheckoutGrid({
                     style={{ color: "#3FDD1B" }}
                     strokeWidth={2.4}
                   />
-                  <span className="min-w-0 font-display text-[15px] font-bold leading-[23px] whitespace-normal sm:text-[16.5px] sm:leading-[24px] lg:whitespace-pre-line">
+                  <span className="min-w-0 font-display text-[15px] font-bold leading-[23px] sm:text-[16.5px] sm:leading-[24px]">
                     {b}
                   </span>
                 </li>
@@ -501,7 +500,7 @@ export function CheckoutFooter({ variant = "tinted" }: { variant?: "tinted" | "p
               items={[
                 { label: "Income Disclaimer", href: "/income-disclaimer" },
                 { label: "Affiliate Agreement", href: "/affiliate-agreement" },
-                { label: "Frequently Asked Questions (FAQ's)", href: "/faq" },
+                { label: "Frequently Asked Questions (FAQ's)", href: "/faqs" },
               ]}
             />
           </div>
@@ -535,7 +534,12 @@ function FooterCol({ title, items }: { title: string; items: { label: string; hr
       <ul className="space-y-2" style={{ color: navySub }}>
         {items.map((i) => (
           <li key={i.label}>
-            <a href={i.href} className="transition-opacity hover:opacity-70">
+            <a
+              href={i.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-70"
+            >
               {i.label}
             </a>
           </li>

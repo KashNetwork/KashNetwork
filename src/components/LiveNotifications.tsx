@@ -20,6 +20,7 @@ const rand = (min: number, max: number) => Math.random() * (max - min) + min;
 export function LiveNotifications({ location }: { location: 'landing' | 'sales' }) {
   const [items, setItems] = useState<Item[]>([]);
   const [current, setCurrent] = useState<Item | null>(null);
+  const [pastHero, setPastHero] = useState(false);
   const shownCount = useRef(0);
   const idx = useRef(0);
   const timers = useRef<number[]>([]);
@@ -30,6 +31,15 @@ export function LiveNotifications({ location }: { location: 'landing' | 'sales' 
       .then((r) => setItems(r.items))
       .catch(() => undefined);
   }, [location]);
+
+  // Don't show popups over the hero video — only once the visitor has
+  // scrolled roughly past it.
+  useEffect(() => {
+    const onScroll = () => setPastHero(window.scrollY > window.innerHeight * 0.55);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -55,7 +65,7 @@ export function LiveNotifications({ location }: { location: 'landing' | 'sales' 
     };
   }, [items]);
 
-  if (!current) return null;
+  if (!current || !pastHero) return null;
   return (
     <div className="pointer-events-none fixed bottom-4 left-3 z-50 w-[min(300px,calc(100vw-1.5rem))] sm:left-4">
       <div className="animate-[fadeIn_.3s_ease] rounded-xl bg-white p-3.5 shadow-lg ring-1 ring-slate-200 sm:p-4">

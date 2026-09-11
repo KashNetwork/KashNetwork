@@ -174,10 +174,10 @@ export function VideoGate({
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-3"
+              className="mt-3 text-base py-3 sm:text-lg"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-            <Button type="submit" disabled={submitting} className="mt-3 w-full">
+            <Button type="submit" disabled={submitting} className="mt-3 w-full text-base py-3 sm:text-lg">
               {submitting ? 'Checking…' : 'CONTINUE →'}
             </Button>
           </form>

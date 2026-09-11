@@ -233,6 +233,19 @@ export class SqlRepo implements Repo {
     )[0]!;
   }
 
+  async listSupportTickets(params: { page: number; pageSize: number }) {
+    const totalRows = await this.db.query<{ n: string }>(
+      `select count(*) as n from support_tickets`,
+      [],
+    );
+    const total = Number(totalRows[0]?.n ?? 0);
+    const rows = await this.db.query<SupportTicketRow>(
+      `select * from support_tickets order by created_at desc limit $1 offset $2`,
+      [params.pageSize, (params.page - 1) * params.pageSize],
+    );
+    return { rows, total };
+  }
+
   async listNotifications(location: 'landing' | 'sales') {
     return this.db.query<NotificationRow>(
       `select * from notifications where active = true and location in ('both', $1)`,

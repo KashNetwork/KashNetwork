@@ -208,6 +208,12 @@ export class InMemoryRepo implements Repo {
     return row;
   }
 
+  async listSupportTickets(params: { page: number; pageSize: number }) {
+    const sorted = [...this.tickets].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const start = (params.page - 1) * params.pageSize;
+    return { rows: sorted.slice(start, start + params.pageSize), total: sorted.length };
+  }
+
   async listNotifications(location: 'landing' | 'sales') {
     return this.notifications.filter(
       (n) => n.active && (n.location === 'both' || n.location === location),

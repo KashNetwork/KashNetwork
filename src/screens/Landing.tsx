@@ -48,7 +48,7 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
       />
 
       <div className="relative mx-auto w-full max-w-5xl px-3 sm:px-6">
-        <section className="mx-auto flex min-h-[100svh] flex-col items-center justify-start pb-24 pt-[15vh] text-center sm:min-h-0 sm:justify-center sm:pb-16 sm:pt-16">
+        <section className="mx-auto flex min-h-[100svh] flex-col items-center justify-start pb-24 pt-[8vh] text-center sm:min-h-0 sm:justify-center sm:pb-16 sm:pt-16">
           <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-200/80 sm:text-sm">
             <span className="text-cyan-500">✦</span>
             Trusted by members worldwide
@@ -57,13 +57,13 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
           <h1 className="mt-6 font-display font-extrabold leading-[1.12] tracking-tight text-slate-900 sm:mt-7">
             <span
               className="block whitespace-nowrap"
-              style={{ fontSize: 'clamp(19px, 5.6vw, 46px)', color: INK, letterSpacing: '-0.01em' }}
+              style={{ fontSize: 'clamp(23px, 6.4vw, 46px)', color: INK, letterSpacing: '-0.01em' }}
             >
               ⚠️ Need <span style={{ color: '#E5162B' }}>Emergency</span> Cash? ⚠️
             </span>
             <span
               className="mt-3 block whitespace-nowrap"
-              style={{ fontSize: 'clamp(15px, 5.7vw, 58px)', letterSpacing: '-0.02em', color: INK }}
+              style={{ fontSize: 'clamp(18px, 6.6vw, 58px)', letterSpacing: '-0.02em', color: INK }}
             >
               <YellowSmear>$30 Per Hour</YellowSmear> Sending Emails
             </span>

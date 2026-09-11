@@ -8,6 +8,7 @@ import {
   Clock,
   History,
   Link2,
+  MessageSquare,
   MousePointerClick,
   Receipt,
   Rocket,
@@ -22,6 +23,7 @@ import {
   api,
   ApiError,
   money,
+  type AdminSupportTicketRow,
   type AdminUserRow,
   type AffiliateStats,
   type SubscriptionSummary,
@@ -290,6 +292,79 @@ function BuyTrafficPanel() {
 
 function SupportPanel() {
   const { me } = useAuth();
+  if (me?.role === 'admin') return <AdminSupportTickets />;
+  return <PaidSupportForm />;
+}
+
+/** Admin's Support tab — every paid user's ticket, newest first. The AI
+ * assistant ("Kash") replies on the admin's behalf; this is the read view. */
+function AdminSupportTickets() {
+  const [rows, setRows] = useState<AdminSupportTicketRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .adminSupportTickets(1)
+      .then((r) => {
+        setRows(r.rows);
+        setTotal(r.total);
+      })
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (!loading && rows.length === 0) {
+    return (
+      <Panel bodyClassName="p-0">
+        <EmptyState
+          icon={MessageSquare}
+          title="No support tickets yet"
+          hint="Messages paid members send from their Support tab land here. Kash, the A.I. assistant, replies on your behalf — this is a read-only log."
+        />
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel bodyClassName="p-0">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
+              <th className="px-5 py-3 font-semibold">From</th>
+              <th className="px-5 py-3 font-semibold">Subject</th>
+              <th className="px-5 py-3 font-semibold">Message</th>
+              <th className="px-5 py-3 font-semibold">Status</th>
+              <th className="px-5 py-3 font-semibold">Received</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {rows.map((t) => (
+              <tr key={t.id} className="align-top hover:bg-slate-50/60">
+                <td className="px-5 py-3 font-medium text-slate-800">{t.from_email}</td>
+                <td className="px-5 py-3 text-slate-600">{t.subject || '—'}</td>
+                <td className="max-w-xs truncate px-5 py-3 text-slate-500" title={t.message}>
+                  {t.message}
+                </td>
+                <td className="px-5 py-3">
+                  <StatusPill status={t.status === 'open' ? 'pending' : t.status} />
+                </td>
+                <td className="px-5 py-3 whitespace-nowrap text-slate-500">
+                  {new Date(t.created_at).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">{total} total</div>
+    </Panel>
+  );
+}
+
+function PaidSupportForm() {
+  const { me } = useAuth();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
@@ -396,7 +471,7 @@ function ProfilePanel() {
             />
           </Field>
           <Btn type="submit" variant="outline">
-            Request email change
+            {me?.role === 'admin' ? 'Update Email' : 'Request email change'}
           </Btn>
         </form>
       </Panel>

@@ -24,10 +24,10 @@ export function RedUnderline({ children }: { children: ReactNode }) {
 }
 
 /**
- * Hand-drawn yellow highlighter behind the wrapped words. A translucent felt-tip
- * marker swipe: the page shows through it (multiply blend, ~55% opacity), the
- * long edges are roughened by an SVG turbulence filter, the ends are uneven and
- * lifted, and it hugs the words so it never bleeds into the text that follows.
+ * Hand-drawn yellow highlighter behind the wrapped words — a bold, near-opaque
+ * felt-tip marker swipe (matches the client's reference image), edges roughened
+ * by an SVG turbulence filter, ends uneven and lifted. Hugs the words tightly
+ * so it never bleeds into the text that follows.
  */
 export function YellowSmear({ children }: { children: ReactNode }) {
   return (
@@ -39,7 +39,7 @@ export function YellowSmear({ children }: { children: ReactNode }) {
         <filter id="kn-smear" x="-15%" y="-45%" width="130%" height="190%">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.007 0.11"
+            baseFrequency="0.007 0.1"
             numOctaves="2"
             seed="6"
             result="n"
@@ -47,7 +47,7 @@ export function YellowSmear({ children }: { children: ReactNode }) {
           <feDisplacementMap
             in="SourceGraphic"
             in2="n"
-            scale="9"
+            scale="7"
             xChannelSelector="R"
             yChannelSelector="G"
           />
@@ -57,15 +57,15 @@ export function YellowSmear({ children }: { children: ReactNode }) {
         aria-hidden="true"
         className="pointer-events-none absolute"
         style={{
-          left: "-0.2em",
-          right: "-0.05em",
-          top: "0.16em",
-          bottom: "0.12em",
+          left: "-0.22em",
+          right: "-0.04em",
+          top: "0.1em",
+          bottom: "0.1em",
           zIndex: 0,
-          background: "#FFDF3E",
-          opacity: 0.55,
+          background: "#FFD400",
+          opacity: 0.92,
           mixBlendMode: "multiply",
-          transform: "rotate(-1.7deg)",
+          transform: "rotate(-1.4deg)",
           borderRadius: "48% 32% 44% 56% / 62% 54% 50% 44%",
           filter: "url(#kn-smear)",
         }}

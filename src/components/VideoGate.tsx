@@ -5,7 +5,6 @@ import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { VIDEO_GATE } from '@/shared';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Button, Input } from './ui';
 
 /**
  * Gated video player with custom controls (no seek bar — viewers can't skip).
@@ -159,27 +158,33 @@ export function VideoGate({
         <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/85 p-3 sm:p-6">
           <form
             onSubmit={submit}
-            className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl sm:p-6"
+            className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl sm:max-w-md sm:p-6 lg:max-w-lg lg:p-8"
           >
-            <h3 className="text-base font-bold text-[#04184E] sm:text-lg">
+            <h3 className="text-base font-bold text-[#04184E] sm:text-lg lg:text-2xl">
               Want to see what happened next?
             </h3>
-            <p className="mt-1 text-[13px] leading-snug text-slate-600 sm:text-sm">
+            <p className="mt-1 text-[13px] leading-snug text-slate-600 sm:text-sm lg:mt-2 lg:text-base">
               Enter your email to continue watching and unlock your demo account…
             </p>
-            <Input
+            {/* hand-rolled (not the shared Input/Button) so the larger sizing below
+                can't lose a specificity tie against those components' own defaults */}
+            <input
               type="email"
               required
               autoFocus
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-3 text-base py-3 sm:text-lg"
+              className="mt-4 w-full rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-[#2A7BEA] focus:ring-2 focus:ring-blue-100 sm:py-3.5 sm:text-lg lg:py-4 lg:text-xl"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-            <Button type="submit" disabled={submitting} className="mt-3 w-full text-base py-3 sm:text-lg">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-3 w-full rounded-lg bg-[#2A7BEA] px-4 py-3 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-lg lg:py-4 lg:text-xl"
+            >
               {submitting ? 'Checking…' : 'CONTINUE →'}
-            </Button>
+            </button>
           </form>
         </div>
       )}

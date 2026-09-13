@@ -65,19 +65,22 @@ export function SiteFooter() {
       <footer style={{ background: tint }}>
         <div className="px-5 sm:px-12 lg:px-[72px] pt-14 pb-4">
           <div className="grid gap-10 grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.75fr)_minmax(0,1.35fr)_minmax(0,1fr)] text-[15px] text-center sm:text-left">
-            <div className="col-span-2 sm:col-span-1">
-              <div className="flex items-center gap-2.5 justify-center sm:justify-start">
+            {/* every column below is a centered flex stack on mobile — one shared
+                mechanism (flex + items-center) so every line shares the same axis,
+                instead of mixing text-align/mx-auto/justify-items per element */}
+            <div className="col-span-2 flex flex-col items-center sm:col-span-1 sm:block">
+              <div className="flex items-center gap-2.5">
                 <KashMark size={32} />
                 <span className="font-display font-extrabold text-[19px] leading-none" style={{ color: "#0F172A" }}>
                   Kash Network
                 </span>
               </div>
-              <p className="mt-4 max-w-[260px] mx-auto sm:mx-0 leading-[1.55]" style={{ color: bodyText }}>
+              <p className="mt-4 max-w-[260px] leading-[1.55]" style={{ color: bodyText }}>
                 The affiliate platform helping partners grow with targeted referrals.
               </p>
             </div>
 
-            <div className="col-span-2 sm:col-span-1">
+            <div className="col-span-2 flex flex-col items-center sm:col-span-1 sm:block">
               <div className="font-display font-bold mb-4" style={{ color: ink }}>Product</div>
               <ul className="space-y-[9px]" style={{ color: bodyText }}>
                 <li><a href="/#features" className="hover:opacity-70">Features</a></li>
@@ -86,7 +89,7 @@ export function SiteFooter() {
               </ul>
             </div>
 
-            <div className="col-span-2 sm:col-span-1">
+            <div className="col-span-2 flex flex-col items-center sm:col-span-1 sm:block">
               <div className="font-display font-bold mb-4" style={{ color: ink }}>Legal</div>
               <div className="grid grid-cols-1 gap-x-6 gap-y-[9px] justify-items-center sm:grid-cols-2 sm:justify-items-start">
                 <ul className="space-y-[9px]" style={{ color: bodyText }}>
@@ -102,7 +105,7 @@ export function SiteFooter() {
               </div>
             </div>
 
-            <div className="col-span-2 sm:col-span-1">
+            <div className="col-span-2 flex flex-col items-center sm:col-span-1 sm:block">
               <div className="font-display font-bold mb-4" style={{ color: ink }}>Contact</div>
               <ul className="space-y-[9px]" style={{ color: bodyText }}>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">

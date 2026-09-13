@@ -72,7 +72,7 @@ export function SiteFooter() {
                   Kash Network
                 </span>
               </div>
-              <p className="mt-4 max-w-[260px] mx-auto leading-[1.55]" style={{ color: bodyText }}>
+              <p className="mt-4 max-w-[260px] mx-auto sm:mx-0 leading-[1.55]" style={{ color: bodyText }}>
                 The affiliate platform helping partners grow with targeted referrals.
               </p>
             </div>

@@ -158,15 +158,17 @@ export function VideoGate({
         <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/85 p-3 sm:p-6">
           <form
             onSubmit={submit}
-            className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl sm:max-w-md sm:p-6 lg:max-w-lg lg:p-8"
+            className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl lg:max-w-lg lg:p-8"
           >
-            <h3 className="text-base font-bold text-[#04184E] sm:text-lg lg:text-2xl">
+            {/* compact on mobile + tablet (this is the size that fits inside the
+                video there); only real desktop (lg, 1024px+) gets the bigger version */}
+            <h3 className="text-base font-bold text-[#04184E] lg:text-2xl">
               Want to see what happened next?
             </h3>
-            <p className="mt-1 text-[13px] leading-snug text-slate-600 sm:text-sm lg:mt-2 lg:text-base">
+            <p className="mt-1 text-[13px] leading-snug text-slate-600 lg:mt-2 lg:text-base">
               Enter your email to continue watching and unlock your demo account…
             </p>
-            {/* hand-rolled (not the shared Input/Button) so the larger sizing below
+            {/* hand-rolled (not the shared Input/Button) so the larger desktop sizing
                 can't lose a specificity tie against those components' own defaults */}
             <input
               type="email"
@@ -175,13 +177,13 @@ export function VideoGate({
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-4 w-full rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-[#2A7BEA] focus:ring-2 focus:ring-blue-100 sm:py-3.5 sm:text-lg lg:py-4 lg:text-xl"
+              className="mt-3 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-[#2A7BEA] focus:ring-2 focus:ring-blue-100 lg:mt-4 lg:px-4 lg:py-4 lg:text-xl"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
             <button
               type="submit"
               disabled={submitting}
-              className="mt-3 w-full rounded-lg bg-[#2A7BEA] px-4 py-3 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-lg lg:py-4 lg:text-xl"
+              className="mt-3 w-full rounded-lg bg-[#2A7BEA] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 lg:mt-3 lg:py-4 lg:text-xl"
             >
               {submitting ? 'Checking…' : 'CONTINUE →'}
             </button>

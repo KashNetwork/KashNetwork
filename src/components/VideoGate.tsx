@@ -153,9 +153,11 @@ export function VideoGate({
         </div>
       )}
 
-      {/* email gate — fits inside the video on every screen size */}
+      {/* email gate — fits inside the video on every screen size. Near-opaque
+          backdrop so the paused video frame (hills/sky on the placeholder clip)
+          doesn't bleed through in patches behind the card. */}
       {gateVisible && !unlocked && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/85 p-3 sm:p-6">
+        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/95 p-3 sm:p-6">
           <form
             onSubmit={submit}
             className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl lg:max-w-lg lg:p-8"

@@ -24,16 +24,6 @@ export const salesSections: Section[] = [
   "kind": "hero",
   "items": [
    {
-    "k": "p",
-    "x": "ATTENTION: Anyone Who Wants REAL Income Online — 24 Hours A Day, 7 Days A Week…",
-    "size": "18",
-    "w": "800",
-    "c": "rgb(36, 96, 232)",
-    "a": "center",
-    "lh": "1.35em",
-    "ls": "0.08em"
-   },
-   {
     "k": "badge",
     "x": "Trusted by members worldwide"
    },
@@ -1520,7 +1510,7 @@ export const salesSections: Section[] = [
   "items": [
    {
     "k": "h2",
-    "x": "Earn Your First 7 Commissions Within 7 Days — Or Don’t Pay.",
+    "x": "Earn Your First 7 Commissions\nWithin 7 Days — Or Don’t Pay.",
     "size": "50",
     "w": "800",
     "c": "rgb(255, 255, 255)",

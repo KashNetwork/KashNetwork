@@ -19,6 +19,13 @@ const IMAGES: Record<string, string> = {
   closing: "/sales/closing.jpg",
 };
 
+/* each screenshot's real pixel width, so the results images never scale up
+   past their native resolution (see the comment in Img()) */
+const RESULTS_NATIVE_WIDTH: Record<string, number> = {
+  results1: 520,
+  results2: 679,
+};
+
 /* ---------- inline rich text: **bold**, _italic_, {{rgb(...)}}…{{/}} ---------- */
 function RichText({ text }: { text: string }) {
   const lines = text.split("\n");
@@ -367,11 +374,15 @@ function Img({ b }: { b: Block }) {
   }
 
 
+  // No maxHeight crop here — b.h used to cap the wrapper's height while the
+  // image itself was h-auto (scales to its own ratio at 100% width), so
+  // anything taller than the cap just got clipped by overflow-hidden. The
+  // inbox-proof shot (a tall portrait) was the worst hit. Cap width instead,
+  // at each screenshot's own native size, so it never upscales past its real
+  // resolution (blurry) while always showing the full image.
+  const nativeWidth = RESULTS_NATIVE_WIDTH[b.src ?? ""] ?? 700;
   return (
-    <span
-      className="block w-full overflow-hidden"
-      style={{ maxHeight: b.h ?? 294, borderRadius: 14 }}
-    >
+    <span className="mx-auto block w-full" style={{ maxWidth: nativeWidth, borderRadius: 14, overflow: "hidden" }}>
       <img
         src={src}
         alt="Commission results screenshot"

@@ -98,7 +98,10 @@ export function VideoGate({
   }
 
   return (
-    <div ref={wrapRef} className="group relative overflow-hidden rounded-2xl bg-black ring-1 ring-black/5">
+    <div
+      ref={wrapRef}
+      className={`group relative overflow-hidden rounded-2xl bg-black ring-1 ring-black/5 ${gateVisible ? 'min-h-[340px]' : ''}`}
+    >
       <video
         ref={videoRef}
         src={src}
@@ -155,9 +158,11 @@ export function VideoGate({
 
       {/* email gate — fits inside the video on every screen size. Near-opaque
           backdrop so the paused video frame (hills/sky on the placeholder clip)
-          doesn't bleed through in patches behind the card. */}
+          doesn't bleed through in patches behind the card. Generous padding +
+          the min-h above on the wrapper keep real breathing room around the
+          card instead of it crowding the video's own rounded corners. */}
       {gateVisible && !unlocked && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/95 p-3 sm:p-6">
+        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black/95 p-5 sm:p-6">
           <form
             onSubmit={submit}
             className="w-[94%] max-w-sm rounded-xl bg-white p-4 text-center shadow-2xl lg:max-w-lg lg:p-8"

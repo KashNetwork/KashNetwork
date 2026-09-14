@@ -88,10 +88,10 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
         </section>
       </div>
 
-      {/* revealed at 3:35 */}
+      {/* revealed at 3:35 — tighter gap on mobile/tablet, original spacing on desktop */}
       <div
         className={`overflow-hidden transition-all duration-700 ${
-          revealed ? 'mt-14 max-h-[7000px] opacity-100' : 'max-h-0 opacity-0'
+          revealed ? 'mt-4 sm:mt-6 lg:mt-14 max-h-[7000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div style={{ background: '#F4F8FF', color: '#0B1220' }}>

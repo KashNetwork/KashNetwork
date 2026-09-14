@@ -122,8 +122,8 @@ function Text({ b, tag }: { b: Block; tag: "h1" | "h2" | "p" }) {
           ⚠️ Need <span style={{ color: "rgb(208, 2, 27)" }}>Emergency</span> Cash? ⚠️
         </span>
         <span
-          className="mt-3 block font-display font-extrabold"
-          style={{ fontSize: "clamp(29px, 7.3vw, 68px)", letterSpacing: "-0.03em", color: ink }}
+          className="mt-3 block whitespace-nowrap font-display font-extrabold"
+          style={{ fontSize: "clamp(18px, 6.6vw, 68px)", letterSpacing: "-0.03em", color: ink }}
         >
           <YellowSmear>$30 Per Hour</YellowSmear> Sending Emails
         </span>

@@ -83,9 +83,9 @@ export function SiteFooter() {
             <div className="col-span-2 flex flex-col items-center sm:col-span-1 sm:block">
               <div className="font-display font-bold mb-4" style={{ color: ink }}>Product</div>
               <ul className="space-y-[9px]" style={{ color: bodyText }}>
-                <li><a href="/#features" className="hover:opacity-70">Features</a></li>
-                <li><a href="/#benefits" className="hover:opacity-70">Benefits</a></li>
-                <li><a href="/#how-it-works" className="hover:opacity-70">How it works</a></li>
+                <li><a href="/#features" target="_blank" rel="noopener noreferrer" className="hover:opacity-70">Features</a></li>
+                <li><a href="/#benefits" target="_blank" rel="noopener noreferrer" className="hover:opacity-70">Benefits</a></li>
+                <li><a href="/#how-it-works" target="_blank" rel="noopener noreferrer" className="hover:opacity-70">How it works</a></li>
               </ul>
             </div>
 
@@ -93,14 +93,14 @@ export function SiteFooter() {
               <div className="font-display font-bold mb-4" style={{ color: ink }}>Legal</div>
               <div className="grid grid-cols-1 gap-x-6 gap-y-[9px] justify-items-center sm:grid-cols-2 sm:justify-items-start">
                 <ul className="space-y-[9px]" style={{ color: bodyText }}>
-                  <li><Link href="/terms-of-service" className="hover:opacity-70">Terms of Service</Link></li>
-                  <li><Link href="/privacy-policy" className="hover:opacity-70">Privacy Policy</Link></li>
-                  <li><Link href="/refund-policy" className="hover:opacity-70">Refund Policy</Link></li>
+                  <li><Link href="/terms-of-service" target="_blank" className="hover:opacity-70">Terms of Service</Link></li>
+                  <li><Link href="/privacy-policy" target="_blank" className="hover:opacity-70">Privacy Policy</Link></li>
+                  <li><Link href="/refund-policy" target="_blank" className="hover:opacity-70">Refund Policy</Link></li>
                 </ul>
                 <ul className="space-y-[9px]" style={{ color: bodyText }}>
-                  <li><Link href="/income-disclaimer" className="hover:opacity-70">Income Disclaimer</Link></li>
-                  <li><Link href="/affiliate-agreement" className="hover:opacity-70">Affiliate Agreement</Link></li>
-                  <li><Link href="/cookie-policy" className="hover:opacity-70">Cookie Policy</Link></li>
+                  <li><Link href="/income-disclaimer" target="_blank" className="hover:opacity-70">Income Disclaimer</Link></li>
+                  <li><Link href="/affiliate-agreement" target="_blank" className="hover:opacity-70">Affiliate Agreement</Link></li>
+                  <li><Link href="/cookie-policy" target="_blank" className="hover:opacity-70">Cookie Policy</Link></li>
                 </ul>
               </div>
             </div>
@@ -110,11 +110,11 @@ export function SiteFooter() {
               <ul className="space-y-[9px]" style={{ color: bodyText }}>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">
                   <Mail className="h-4 w-4 shrink-0" style={{ color: softText }} />
-                  <a href="mailto:support@kash.network" className="break-all hover:opacity-70">support@kash.network</a>
+                  <a href="mailto:support@kash.network" target="_blank" rel="noopener noreferrer" className="break-all hover:opacity-70">support@kash.network</a>
                 </li>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">
                   <Globe className="h-4 w-4 shrink-0" style={{ color: softText }} />
-                  <a href="https://kash.network/" className="hover:opacity-70">kash.network</a>
+                  <a href="https://kash.network/" target="_blank" rel="noopener noreferrer" className="hover:opacity-70">kash.network</a>
                 </li>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">
                   <Headphones className="h-4 w-4 shrink-0" style={{ color: softText }} />

@@ -8,25 +8,18 @@ import type {
   PaymentEvent,
   PaymentProvider,
 } from '@/shared';
-
-const DISPOSABLE = new Set([
-  'mailinator.com', 'guerrillamail.com', '10minutemail.com', 'trashmail.com',
-  'yopmail.com', 'temp-mail.org', 'sharklasers.com',
-]);
+import { verifyEmailByDns } from './email-verify';
 
 export const fakeEmailProvider: EmailProvider = {
   async send(msg) {
     console.log(`[fake-email] ${msg.from} -> ${msg.to} :: ${msg.subject}`);
     return { providerMessageId: `fake-${Date.now()}-${Math.random().toString(36).slice(2)}` };
   },
+  // Real DNS check even without RESEND_API_KEY configured — the video-gate
+  // lead capture shouldn't accept made-up domains just because sending isn't
+  // wired up yet. Same logic the Resend provider uses.
   async verifyEmail(email) {
-    const at = email.lastIndexOf('@');
-    if (at < 1 || !email.includes('.', at)) return { valid: false, reason: 'syntax' };
-    const domain = email.slice(at + 1).toLowerCase();
-    if (DISPOSABLE.has(domain)) return { valid: false, reason: 'disposable' };
-    if (/^(example\.|test\.)/.test(domain) || domain === 'example.com')
-      return { valid: false, reason: 'undeliverable' };
-    return { valid: true };
+    return verifyEmailByDns(email);
   },
 };
 

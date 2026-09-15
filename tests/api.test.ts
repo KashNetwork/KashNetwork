@@ -44,6 +44,15 @@ describe('video-gate lead capture', () => {
     expect((await bad.json()).error).toBe('invalid_email');
   });
 
+  it('rejects emails at a made-up domain with no mail servers', async () => {
+    const bad = await leadsPOST(
+      json('/api/leads', { email: 'legendarymarketer.rep@gkdtyail.com' }),
+      noCtx,
+    );
+    expect(bad.status).toBe(400);
+    expect((await bad.json()).error).toBe('invalid_email');
+  });
+
   it('is idempotent for an existing lead', async () => {
     await leadsPOST(json('/api/leads', { email: 'dup@gmail.com' }), noCtx);
     const again = await leadsPOST(json('/api/leads', { email: 'dup@gmail.com' }), noCtx);

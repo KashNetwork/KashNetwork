@@ -14,6 +14,14 @@ const bodySchema = z.object({
   ref: z.string().trim().max(64).optional(),
 });
 
+const INVALID_EMAIL_MESSAGE: Record<string, string> = {
+  syntax: "That doesn't look like a valid email address.",
+  disposable: 'Please use a permanent email address, not a temporary/disposable one.',
+  role: 'Please use a personal email address rather than a shared inbox like admin@ or support@.',
+  no_mx: "We couldn't find a mail server for that email's domain — please double-check it.",
+  undeliverable: "That email address looks undeliverable — please double-check it.",
+};
+
 /**
  * POST /api/leads — the video-gate email capture. Verifies the email, creates
  * (or re-uses) a passwordless free account, issues a long-lived lead session.
@@ -26,7 +34,10 @@ export const POST = route(async (req) => {
 
   const verdict = await getEmailProvider().verifyEmail(email);
   if (!verdict.valid) {
-    throw badRequest('invalid_email', `That email looks ${verdict.reason ?? 'undeliverable'}.`);
+    throw badRequest(
+      'invalid_email',
+      INVALID_EMAIL_MESSAGE[verdict.reason ?? 'undeliverable'] ?? INVALID_EMAIL_MESSAGE.undeliverable!,
+    );
   }
 
   const existing = await db.getProfileByEmail(email);

@@ -1,14 +1,18 @@
 // Shared "is this email real" check — used by both the fake and the Resend
 // email providers, so verification is the same whether or not RESEND_API_KEY
-// is set. Resend has no address-validation API, so this is: syntax, a
-// disposable/throwaway domain list, role-account local-parts, then a real DNS
-// lookup (MX, falling back to A/AAAA per RFC 5321 §5.1) confirming the domain
-// can actually receive mail. It can't confirm the mailbox itself exists
-// (that needs a paid verification service — swap one in later by pointing
-// EMAIL_VERIFY_PROVIDER at it), but it reliably rejects made-up domains like
-// "gkdtyail.com" that have no mail infrastructure at all.
+// is set. Layer 1 (always runs, free): syntax, a disposable/throwaway domain
+// list, role-account local-parts, then a real DNS lookup (MX, falling back to
+// A/AAAA per RFC 5321 §5.1) confirming the domain can actually receive mail —
+// reliably rejects made-up domains like "gkdtyail.com". Layer 2 (only when
+// EMAIL_VERIFY_PROVIDER=kickbox + EMAIL_VERIFY_API_KEY are set, and only for
+// addresses that already passed layer 1): a real Kickbox mailbox probe, which
+// catches made-up addresses at real providers (e.g. gmail.com) that layer 1
+// can't — nothing can check that without either this kind of paid service or
+// an actual confirm-your-email step.
 
 import { resolve4, resolve6, resolveMx } from 'node:dns/promises';
+import { config } from '../config';
+import { verifyEmailWithKickbox } from './kickbox';
 
 const DISPOSABLE = new Set([
   'mailinator.com', 'guerrillamail.com', '10minutemail.com', 'trashmail.com',
@@ -24,7 +28,7 @@ const ROLE_LOCALPARTS = new Set([
 
 export type EmailVerdict =
   | { valid: true }
-  | { valid: false; reason: 'syntax' | 'disposable' | 'role' | 'no_mx' };
+  | { valid: false; reason: 'syntax' | 'disposable' | 'role' | 'no_mx' | 'undeliverable' };
 
 const domainCache = new Map<string, boolean>();
 
@@ -72,6 +76,24 @@ export async function verifyEmailByDns(email: string): Promise<EmailVerdict> {
   if (DISPOSABLE.has(domain)) return { valid: false, reason: 'disposable' };
   if (ROLE_LOCALPARTS.has(localPart)) return { valid: false, reason: 'role' };
   if (!(await domainCanReceiveMail(domain))) return { valid: false, reason: 'no_mx' };
+
+  return { valid: true };
+}
+
+/**
+ * Full check: DNS layer, then — only if the address survives that and Kickbox
+ * is configured — a real mailbox-level probe. This is what both email
+ * providers should call; verifyEmailByDns() stays exported on its own for the
+ * tests that exercise the DNS layer in isolation.
+ */
+export async function verifyEmail(email: string): Promise<EmailVerdict> {
+  const dnsVerdict = await verifyEmailByDns(email);
+  if (!dnsVerdict.valid) return dnsVerdict;
+
+  if (config.emailVerify.provider === 'kickbox' && config.emailVerify.apiKey) {
+    const kickboxVerdict = await verifyEmailWithKickbox(email, config.emailVerify.apiKey);
+    if (!kickboxVerdict.valid) return kickboxVerdict;
+  }
 
   return { valid: true };
 }

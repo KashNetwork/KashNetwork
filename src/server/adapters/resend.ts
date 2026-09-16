@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import type { EmailProvider } from '@/shared';
 import { config } from '../config';
-import { verifyEmailByDns } from './email-verify';
+import { verifyEmail as verifyEmailShared } from './email-verify';
 
 /**
  * Resend-backed EmailProvider.
@@ -36,6 +36,6 @@ export class ResendEmailProvider implements EmailProvider {
   }
 
   async verifyEmail(email: string) {
-    return verifyEmailByDns(email);
+    return verifyEmailShared(email);
   }
 }

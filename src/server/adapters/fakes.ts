@@ -8,7 +8,7 @@ import type {
   PaymentEvent,
   PaymentProvider,
 } from '@/shared';
-import { verifyEmailByDns } from './email-verify';
+import { verifyEmail as verifyEmailShared } from './email-verify';
 
 export const fakeEmailProvider: EmailProvider = {
   async send(msg) {
@@ -19,7 +19,7 @@ export const fakeEmailProvider: EmailProvider = {
   // lead capture shouldn't accept made-up domains just because sending isn't
   // wired up yet. Same logic the Resend provider uses.
   async verifyEmail(email) {
-    return verifyEmailByDns(email);
+    return verifyEmailShared(email);
   },
 };
 

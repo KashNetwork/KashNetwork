@@ -32,14 +32,11 @@ export const POST = route(async (req) => {
   const { email, fullName } = parsed.data;
   const db = await getDb();
 
-  const verdict = await getEmailProvider().verifyEmail(email);
-  if (!verdict.valid) {
-    throw badRequest(
-      'invalid_email',
-      INVALID_EMAIL_MESSAGE[verdict.reason ?? 'undeliverable'] ?? INVALID_EMAIL_MESSAGE.undeliverable!,
-    );
-  }
-
+  // Check for an existing account BEFORE running (paid) verification — a
+  // returning lead or an existing customer re-entering their email doesn't
+  // need re-verifying (it was already verified the first time, or they
+  // already own the address), so this skips spending a Kickbox credit on
+  // every repeat visit.
   const existing = await db.getProfileByEmail(email);
   if (existing) {
     if (existing.account_type === 'paid' || existing.password_hash) {
@@ -47,6 +44,14 @@ export const POST = route(async (req) => {
     }
     await issueSession(existing.id, 'lead', { ip: clientIp(req), userAgent: userAgent(req) });
     return ok({ me: presentMe(existing), created: false });
+  }
+
+  const verdict = await getEmailProvider().verifyEmail(email);
+  if (!verdict.valid) {
+    throw badRequest(
+      'invalid_email',
+      INVALID_EMAIL_MESSAGE[verdict.reason ?? 'undeliverable'] ?? INVALID_EMAIL_MESSAGE.undeliverable!,
+    );
   }
 
   const refCode = parsed.data.ref ?? (await getCookie(REF_COOKIE)) ?? undefined;

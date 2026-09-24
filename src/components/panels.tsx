@@ -23,9 +23,11 @@ import {
   api,
   ApiError,
   money,
+  type AdminPayoutRow,
   type AdminSupportTicketRow,
   type AdminUserRow,
   type AffiliateStats,
+  type PayoutRow,
   type SubscriptionSummary,
 } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -55,7 +57,6 @@ export type TabKey =
   | 'admin';
 
 const SOON_M2 = 'Live in Milestone 2';
-const SOON_M3 = 'Live in Milestone 3';
 const SOON_M4 = 'Live in Milestone 4';
 
 /* --------------------------------------------------- Harley's Story (free) */
@@ -192,12 +193,48 @@ function DashboardPanel() {
   );
 }
 
+const PAYOUT_MIN_CENTS = 5000; // mirrors DEFAULTS.payoutMinCents in @/shared
+const PAYOUT_METHOD_LABEL: Record<string, string> = {
+  paypal: 'PayPal',
+  cashapp: 'Cash App',
+  bank: 'Bank transfer',
+  other: 'Other',
+};
+
 function CommissionsPanel() {
   const [data, setData] = useState<Awaited<ReturnType<typeof api.commissions>> | null>(null);
-  useEffect(() => {
+  const [payouts, setPayouts] = useState<PayoutRow[] | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [method, setMethod] = useState<'paypal' | 'cashapp' | 'bank' | 'other'>('paypal');
+  const [destination, setDestination] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<{ tone: 'success' | 'warn'; text: string } | null>(null);
+
+  const load = () => {
     api.commissions().then(setData).catch(() => undefined);
-  }, []);
+    api.myPayouts().then((r) => setPayouts(r.payouts)).catch(() => undefined);
+  };
+  useEffect(load, []);
+
   const m = (n: number | undefined) => (n === undefined ? '—' : money(n));
+  const canRequest = (data?.walletCents ?? 0) >= PAYOUT_MIN_CENTS;
+
+  async function submitRequest(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setNotice(null);
+    try {
+      await api.requestPayout(method, destination.trim());
+      setNotice({ tone: 'success', text: 'Payout requested — an admin will review and mark it paid.' });
+      setShowForm(false);
+      setDestination('');
+      load();
+    } catch (err) {
+      setNotice({ tone: 'warn', text: err instanceof ApiError ? err.message : 'Could not request payout.' });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -207,21 +244,83 @@ function CommissionsPanel() {
         <StatCard label="This month" value={m(data?.thisMonthCents)} icon={CircleDollarSign} hint="commissions earned" />
       </div>
 
+      {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
+
       <Panel
         title="Cashouts"
         action={
-          <Btn variant="outline" disabled className="!py-1.5 !text-xs">
+          <Btn
+            variant="outline"
+            disabled={!canRequest}
+            onClick={() => setShowForm((v) => !v)}
+            className="!py-1.5 !text-xs"
+          >
             Request cashout
           </Btn>
         }
         bodyClassName="p-0"
       >
-        <EmptyState
-          icon={Banknote}
-          title="No cashout history"
-          hint="Request a payout once you have an available balance. Admin approves manually."
-          soon={SOON_M3}
-        />
+        {!canRequest && (
+          <p className="px-5 pt-4 text-xs text-slate-400 sm:px-6">
+            You need at least {money(PAYOUT_MIN_CENTS)} available to request a cashout.
+          </p>
+        )}
+
+        {showForm && (
+          <form onSubmit={submitRequest} className="space-y-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+            <Field label="Payout method">
+              <select
+                value={method}
+                onChange={(e) => setMethod(e.target.value as typeof method)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-100"
+              >
+                <option value="paypal">PayPal</option>
+                <option value="cashapp">Cash App</option>
+                <option value="bank">Bank transfer</option>
+                <option value="other">Other</option>
+              </select>
+            </Field>
+            <Field label={method === 'paypal' ? 'PayPal email' : method === 'cashapp' ? 'Cash App $cashtag' : 'Where to send it'}>
+              <Input
+                required
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder={method === 'paypal' ? 'you@email.com' : method === 'cashapp' ? '$yourtag' : 'Account details'}
+              />
+            </Field>
+            <div className="flex items-center gap-2">
+              <Btn type="submit" disabled={busy} className="!py-2 !text-xs">
+                {busy ? 'Requesting…' : `Request ${money(data?.walletCents ?? 0)}`}
+              </Btn>
+              <Btn type="button" variant="ghost" onClick={() => setShowForm(false)} className="!py-2 !text-xs">
+                Cancel
+              </Btn>
+            </div>
+          </form>
+        )}
+
+        {payouts && payouts.length > 0 ? (
+          <ul className="divide-y divide-slate-50">
+            {payouts.map((p) => (
+              <li key={p.id} className="flex items-center justify-between px-5 py-3 text-sm sm:px-6">
+                <span className="flex items-center gap-2 text-slate-700">
+                  <StatusPill status={p.status} />
+                  {PAYOUT_METHOD_LABEL[p.method ?? 'other']}
+                </span>
+                <span className="flex items-center gap-3">
+                  <span className="font-semibold text-slate-800">{money(p.amountCents)}</span>
+                  <span className="text-xs text-slate-400">{shortDate(p.requestedAt)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            icon={Banknote}
+            title="No cashout history"
+            hint="Request a payout once you have an available balance. Admin approves manually."
+          />
+        )}
       </Panel>
 
       <Panel title="Transactions" bodyClassName="p-0">
@@ -730,16 +829,161 @@ function AdminCustomers() {
   );
 }
 
+const PAYOUT_FILTERS = [
+  { k: 'requested', label: 'Requested' },
+  { k: 'paid', label: 'Paid' },
+  { k: 'rejected', label: 'Rejected' },
+  { k: 'all', label: 'All' },
+];
+
 function AdminPayouts() {
+  const [filter, setFilter] = useState<'requested' | 'paid' | 'rejected' | 'all'>('requested');
+  const [rows, setRows] = useState<AdminPayoutRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const load = () => {
+    api
+      .adminPayouts(filter, 1)
+      .then((r) => {
+        setRows(r.rows);
+        setTotal(r.total);
+      })
+      .catch(() => undefined);
+  };
+  useEffect(load, [filter]);
+
+  async function approve(id: string) {
+    setBusyId(id);
+    setNotice(null);
+    try {
+      await api.approvePayout(id);
+      setNotice('Marked paid.');
+      load();
+    } catch (err) {
+      setNotice(err instanceof ApiError ? err.message : 'Could not approve payout.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function reject(id: string) {
+    const reason = window.prompt('Reason for rejecting this payout (e.g. suspected fraud, wrong details)?');
+    if (!reason || !reason.trim()) return;
+    setBusyId(id);
+    setNotice(null);
+    try {
+      await api.rejectPayout(id, reason.trim());
+      setNotice('Payout rejected — commissions returned to the affiliate’s available balance.');
+      load();
+    } catch (err) {
+      setNotice(err instanceof ApiError ? err.message : 'Could not reject payout.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
-    <Panel bodyClassName="p-0">
-      <EmptyState
-        icon={Banknote}
-        title="No cashout requests"
-        hint="Affiliate payout requests land here — approve & mark paid, reject, or export CSV for batch payment."
-        soon={SOON_M3}
-      />
-    </Panel>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {PAYOUT_FILTERS.map((f) => (
+          <button
+            key={f.k}
+            onClick={() => setFilter(f.k as typeof filter)}
+            className={cn(
+              'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
+              filter === f.k
+                ? 'bg-slate-900 text-white'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {notice && <Notice tone={notice.includes('rejected') || notice.includes('paid') ? 'success' : 'warn'}>{notice}</Notice>}
+
+      <Panel bodyClassName="p-0">
+        {rows.length === 0 ? (
+          <EmptyState
+            icon={Banknote}
+            title="No cashout requests"
+            hint="Affiliate payout requests land here — approve & mark paid, or reject with a reason."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3 font-semibold">Affiliate</th>
+                  <th className="px-5 py-3 font-semibold">Amount</th>
+                  <th className="px-5 py-3 font-semibold">Method</th>
+                  <th className="px-5 py-3 font-semibold">Destination</th>
+                  <th className="px-5 py-3 font-semibold">Status</th>
+                  <th className="px-5 py-3 font-semibold">Requested</th>
+                  <th className="px-5 py-3 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {rows.map((p) => (
+                  <tr key={p.id} className="align-top hover:bg-slate-50/60">
+                    <td className="px-5 py-3">
+                      <div className="font-medium text-slate-800">{p.affiliateName ?? p.affiliateEmail}</div>
+                      <div className="text-xs text-slate-400">{p.affiliateEmail}</div>
+                    </td>
+                    <td className="px-5 py-3 font-semibold text-slate-800">{money(p.amountCents)}</td>
+                    <td className="px-5 py-3 text-slate-600">{PAYOUT_METHOD_LABEL[p.method ?? 'other']}</td>
+                    <td className="max-w-[160px] truncate px-5 py-3 text-slate-500">
+                      {typeof p.methodDetails === 'object' &&
+                      p.methodDetails &&
+                      'destination' in p.methodDetails
+                        ? String((p.methodDetails as { destination: unknown }).destination)
+                        : '—'}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusPill status={p.status} />
+                    </td>
+                    <td className="px-5 py-3 whitespace-nowrap text-slate-500">{shortDate(p.requestedAt)}</td>
+                    <td className="px-5 py-3">
+                      {p.status === 'requested' ? (
+                        <div className="flex gap-2">
+                          <Btn
+                            onClick={() => approve(p.id)}
+                            disabled={busyId === p.id}
+                            className="!px-3 !py-1.5 !text-xs"
+                          >
+                            Approve &amp; mark paid
+                          </Btn>
+                          <Btn
+                            variant="outline"
+                            onClick={() => reject(p.id)}
+                            disabled={busyId === p.id}
+                            className="!px-3 !py-1.5 !text-xs !text-rose-600"
+                          >
+                            Reject
+                          </Btn>
+                        </div>
+                      ) : p.status === 'rejected' && p.rejectedReason ? (
+                        <span className="text-xs text-slate-400" title={p.rejectedReason}>
+                          {p.rejectedReason}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-300">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {rows.length > 0 && (
+          <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">{total} total</div>
+        )}
+      </Panel>
+    </div>
   );
 }
 

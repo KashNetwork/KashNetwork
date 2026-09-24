@@ -368,6 +368,8 @@ export function StatusPill({ status }: { status: string }) {
     cancelled: 'bg-rose-50 text-rose-600 ring-rose-200',
     lead: 'bg-blue-50 text-blue-600 ring-blue-200',
     admin: 'bg-violet-50 text-violet-600 ring-violet-200',
+    requested: 'bg-amber-50 text-amber-700 ring-amber-200',
+    rejected: 'bg-rose-50 text-rose-600 ring-rose-200',
   };
   return (
     <span

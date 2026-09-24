@@ -121,6 +121,29 @@ export const api = {
       cashouts: unknown[];
       transactions: { id: string; type: string; amountCents: number; date: string }[];
     }>('/me/commissions'),
+
+  // --- M3: payouts ---
+  myPayouts: () =>
+    req<{ payouts: PayoutRow[] }>('/me/payouts'),
+  requestPayout: (method: PayoutMethod, methodDetails: string) =>
+    req<{ payout: PayoutRow }>('/me/payouts', {
+      method: 'POST',
+      body: JSON.stringify({ method, methodDetails }),
+    }),
+  adminPayouts: (status: PayoutStatus | 'all' = 'requested', page = 1) =>
+    req<{ rows: AdminPayoutRow[]; total: number; page: number; pageSize: number }>(
+      `/admin/payouts?status=${status}&page=${page}`,
+    ),
+  approvePayout: (id: string) =>
+    req<{ payout: PayoutRow }>(`/admin/payouts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'approve' }),
+    }),
+  rejectPayout: (id: string, reason: string) =>
+    req<{ payout: PayoutRow }>(`/admin/payouts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'reject', reason }),
+    }),
   subscription: () =>
     req<{ subscription: SubscriptionSummary | null }>('/me/subscription'),
   cancelSubscription: () =>
@@ -177,4 +200,23 @@ export interface AdminSupportTicketRow {
   message: string;
   status: string;
   created_at: string;
+}
+
+export type PayoutMethod = 'paypal' | 'cashapp' | 'bank' | 'other';
+export type PayoutStatus = 'requested' | 'approved' | 'paid' | 'rejected';
+
+export interface PayoutRow {
+  id: string;
+  amountCents: number;
+  status: PayoutStatus;
+  method: PayoutMethod | null;
+  requestedAt: string;
+  paidAt: string | null;
+  rejectedReason: string | null;
+}
+
+export interface AdminPayoutRow extends PayoutRow {
+  affiliateEmail: string;
+  affiliateName: string | null;
+  methodDetails: unknown;
 }

@@ -89,4 +89,120 @@ describe('SqlRepo via PGlite', () => {
   });
 });
 
+/** M3 payouts — the writable-CTE claim in createPayoutRequest is the riskiest
+ * bit of raw SQL in the project (one statement doing a conditional
+ * update+insert+update); this is what actually proves it against real
+ * Postgres semantics, not just the in-memory fake. */
+describe('SqlRepo payouts via PGlite', () => {
+  it('atomically claims available commissions into one payout, then approve/reject round-trip', async () => {
+    const aff = await repo.createProfile({ email: 'sql-payout-aff@gmail.com', account_type: 'paid' });
+    await repo.updateProfile(aff.id, { is_affiliate: true, affiliate_code: 'SQLPAY' });
+    const buyer = await repo.createProfile({ email: 'sql-payout-buyer@gmail.com' });
+    const referral = await repo.createReferral({
+      affiliateId: aff.id,
+      referredProfileId: buyer.id,
+      attributionSource: 'test',
+    });
+
+    const c1 = await repo.createCommission({
+      affiliateId: aff.id,
+      referralId: referral.id,
+      subscriptionId: null,
+      paymentEventId: null,
+      amountCents: 3000,
+      kind: 'recurring',
+      holdUntil: new Date(Date.now() - 1000).toISOString(),
+    });
+    const c2 = await repo.createCommission({
+      affiliateId: aff.id,
+      referralId: referral.id,
+      subscriptionId: null,
+      paymentEventId: null,
+      amountCents: 2500,
+      kind: 'recurring',
+      holdUntil: new Date(Date.now() - 1000).toISOString(),
+    });
+    await repo.updateCommission(c1.id, { status: 'available' });
+    await repo.updateCommission(c2.id, { status: 'available' });
+
+    // nothing to claim yet for an affiliate with no available commissions
+    const admin = await repo.createProfile({ email: 'sql-payout-admin@kash.network', role: 'admin' });
+    const nothing = await repo.createPayoutRequest({
+      affiliateId: admin.id,
+      method: 'paypal',
+      methodDetails: { destination: 'x@y.com' },
+    });
+    expect(nothing).toBeNull();
+
+    const payout = await repo.createPayoutRequest({
+      affiliateId: aff.id,
+      method: 'paypal',
+      methodDetails: { destination: 'sql-payout-aff@paypal.com' },
+    });
+    expect(payout).toBeTruthy();
+    expect(payout!.amount_cents).toBe(5500);
+    expect(payout!.status).toBe('requested');
+
+    // both commissions claimed, linked to the payout, no longer available
+    const claimed = await repo.listCommissionsByAffiliate(aff.id);
+    expect(claimed.every((c) => c.status === 'requested' && c.payout_id === payout!.id)).toBe(true);
+
+    // a second request right after has nothing left to claim
+    const second = await repo.createPayoutRequest({
+      affiliateId: aff.id,
+      method: 'paypal',
+      methodDetails: { destination: 'sql-payout-aff@paypal.com' },
+    });
+    expect(second).toBeNull();
+
+    const listed = await repo.listPayoutsByStatus('requested', { page: 1, pageSize: 10 });
+    expect(listed.rows.some((r) => r.id === payout!.id && r.affiliate_email === 'sql-payout-aff@gmail.com')).toBe(
+      true,
+    );
+
+    const approved = await repo.approveAndPayPayout(payout!.id, admin.id);
+    expect(approved.status).toBe('paid');
+    expect(approved.paid_at).toBeTruthy();
+    const paidCommissions = await repo.listCommissionsByAffiliate(aff.id);
+    expect(paidCommissions.every((c) => c.status === 'paid')).toBe(true);
+
+    await expect(repo.approveAndPayPayout(payout!.id, admin.id)).rejects.toThrow();
+  });
+
+  it('reject reverts claimed commissions back to available', async () => {
+    const aff = await repo.createProfile({ email: 'sql-payout-aff2@gmail.com', account_type: 'paid' });
+    await repo.updateProfile(aff.id, { is_affiliate: true, affiliate_code: 'SQLPAY2' });
+    const buyer = await repo.createProfile({ email: 'sql-payout-buyer2@gmail.com' });
+    const referral = await repo.createReferral({
+      affiliateId: aff.id,
+      referredProfileId: buyer.id,
+      attributionSource: 'test',
+    });
+    const c = await repo.createCommission({
+      affiliateId: aff.id,
+      referralId: referral.id,
+      subscriptionId: null,
+      paymentEventId: null,
+      amountCents: 6000,
+      kind: 'recurring',
+      holdUntil: new Date(Date.now() - 1000).toISOString(),
+    });
+    await repo.updateCommission(c.id, { status: 'available' });
+
+    const admin = await repo.createProfile({ email: 'sql-payout-admin2@kash.network', role: 'admin' });
+    const payout = await repo.createPayoutRequest({
+      affiliateId: aff.id,
+      method: 'bank',
+      methodDetails: { destination: 'acct 123' },
+    });
+    const rejected = await repo.rejectPayout(payout!.id, admin.id, 'suspicious activity');
+    expect(rejected.status).toBe('rejected');
+    expect(rejected.rejected_reason).toBe('suspicious activity');
+
+    const after = await repo.listCommissionsByAffiliate(aff.id);
+    expect(after.find((r) => r.id === c.id)?.status).toBe('available');
+    expect(after.find((r) => r.id === c.id)?.payout_id).toBeNull();
+  });
+});
+
 type ProfileDetails = Record<string, unknown>;

@@ -1,8 +1,9 @@
-import type { ClickLinkKind, CommissionKind } from '@/shared';
+import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
 import { MONEY } from '@/shared';
 import type { Repo } from './repo';
 import type { SqlClient } from './sql';
 import type {
+  AdminPayoutListRow,
   AdminUserListParams,
   AdminUserListRow,
   AffiliateStats,
@@ -13,6 +14,7 @@ import type {
   NewProfile,
   NotificationRow,
   PaymentEventRow,
+  PayoutRow,
   ProfileRow,
   ReferralRow,
   SessionRow,
@@ -722,5 +724,111 @@ export class SqlRepo implements Repo {
       'select * from payment_events where customer_email = $1::citext order by occurred_at desc',
       [norm(email)],
     );
+  }
+
+  /* ------------------------------------------------------------ M3: payouts */
+
+  async createPayoutRequest(input: {
+    affiliateId: string;
+    method: PayoutMethod;
+    methodDetails: unknown;
+  }): Promise<PayoutRow | null> {
+    // A single writable-CTE statement doing claim+insert+link was tried first
+    // (kept it atomic by construction) but Postgres doesn't reliably support
+    // modifying the same target table (commissions) twice in one statement —
+    // real PGlite runs silently dropped the second update. tests/repo.test.ts
+    // caught it. Three sequential statements instead: still correct (each
+    // step only touches rows the previous step just proved it owns), just not
+    // wrapped in an app-level transaction — matching how the rest of this
+    // Repo already does multi-row writes without one.
+    const claimed = await this.db.query<{ id: string; amount_cents: number }>(
+      `update commissions
+       set status = 'requested'::commission_status
+       where affiliate_id = $1::uuid and status = 'available'::commission_status
+       returning id, amount_cents`,
+      [input.affiliateId],
+    );
+    if (claimed.length === 0) return null;
+
+    const amountCents = claimed.reduce((s, c) => s + Number(c.amount_cents), 0);
+    const payout = one(
+      await this.db.query<PayoutRow>(
+        `insert into payouts (affiliate_id, amount_cents, status, method, method_details)
+         values ($1::uuid, $2, 'requested'::payout_status, $3::payout_method, $4::jsonb)
+         returning *`,
+        [input.affiliateId, amountCents, input.method, JSON.stringify(input.methodDetails ?? null)],
+      ),
+    )!;
+
+    await this.db.query(
+      `update commissions set payout_id = $2::uuid where id = any($1::uuid[])`,
+      [claimed.map((c) => c.id), payout.id],
+    );
+    return payout;
+  }
+
+  async getPayoutById(id: string) {
+    return one(await this.db.query<PayoutRow>('select * from payouts where id = $1::uuid', [id]));
+  }
+
+  async listPayoutsByAffiliate(affiliateId: string, limit = 50) {
+    return this.db.query<PayoutRow>(
+      'select * from payouts where affiliate_id = $1::uuid order by requested_at desc limit $2',
+      [affiliateId, limit],
+    );
+  }
+
+  async listPayoutsByStatus(
+    status: PayoutStatus | 'all',
+    params: { page: number; pageSize: number },
+  ): Promise<{ rows: AdminPayoutListRow[]; total: number }> {
+    const where = status === 'all' ? '' : `where p.status = $1::payout_status`;
+    const args: unknown[] = status === 'all' ? [] : [status];
+    const offset = (params.page - 1) * params.pageSize;
+
+    const [rows, countRows] = await Promise.all([
+      this.db.query<AdminPayoutListRow>(
+        `select p.*, pr.email as affiliate_email, pr.full_name as affiliate_full_name
+         from payouts p join profiles pr on pr.id = p.affiliate_id
+         ${where}
+         order by p.requested_at desc
+         limit $${args.length + 1} offset $${args.length + 2}`,
+        [...args, params.pageSize, offset],
+      ),
+      this.db.query<{ count: string }>(`select count(*) from payouts p ${where}`, args),
+    ]);
+    return { rows, total: Number(countRows[0]?.count ?? 0) };
+  }
+
+  async approveAndPayPayout(id: string, actedBy: string): Promise<PayoutRow> {
+    const rows = await this.db.query<PayoutRow>(
+      `update payouts set status = 'paid'::payout_status, approved_at = now(), paid_at = now(), acted_by = $2::uuid
+       where id = $1::uuid and status = 'requested'::payout_status
+       returning *`,
+      [id, actedBy],
+    );
+    const payout = one(rows);
+    if (!payout) throw new Error('payout not found or not in requested status');
+    await this.db.query(
+      `update commissions set status = 'paid'::commission_status where payout_id = $1::uuid`,
+      [id],
+    );
+    return payout;
+  }
+
+  async rejectPayout(id: string, actedBy: string, reason: string): Promise<PayoutRow> {
+    const rows = await this.db.query<PayoutRow>(
+      `update payouts set status = 'rejected'::payout_status, rejected_reason = $3, acted_by = $2::uuid
+       where id = $1::uuid and status = 'requested'::payout_status
+       returning *`,
+      [id, actedBy, reason],
+    );
+    const payout = one(rows);
+    if (!payout) throw new Error('payout not found or not in requested status');
+    await this.db.query(
+      `update commissions set status = 'available'::commission_status, payout_id = null where payout_id = $1::uuid`,
+      [id],
+    );
+    return payout;
   }
 }

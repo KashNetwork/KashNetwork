@@ -5,6 +5,8 @@ import type {
   CommissionStatus,
   FreeVariant,
   PaymentEventType,
+  PayoutMethod,
+  PayoutStatus,
   ReferralStatus,
   SubscriptionState,
   UserRole,
@@ -215,4 +217,26 @@ export interface AdminUserListRow {
   created_at: string;
   referral_count: number;
   total_earned_cents: number;
+}
+
+/* --------------------------------------------------------- M3: payouts */
+
+export interface PayoutRow {
+  id: string;
+  affiliate_id: string;
+  amount_cents: number;
+  status: PayoutStatus;
+  method: PayoutMethod | null;
+  method_details: unknown;
+  requested_at: string;
+  approved_at: string | null;
+  paid_at: string | null;
+  rejected_reason: string | null;
+  acted_by: string | null;
+  created_at: string;
+}
+
+export interface AdminPayoutListRow extends PayoutRow {
+  affiliate_email: string;
+  affiliate_full_name: string | null;
 }

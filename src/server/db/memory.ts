@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { ClickLinkKind, CommissionKind } from '@/shared';
+import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
 import type { Repo } from './repo';
 import type {
+  AdminPayoutListRow,
   AdminUserListParams,
   AdminUserListRow,
   AffiliateStats,
@@ -12,6 +13,7 @@ import type {
   NewProfile,
   NotificationRow,
   PaymentEventRow,
+  PayoutRow,
   ProfileRow,
   ReferralRow,
   SessionRow,
@@ -39,6 +41,9 @@ export class InMemoryRepo implements Repo {
   commissions = new Map<string, CommissionRow>();
   referralLinks: Array<{ affiliate_id: string; kind: ClickLinkKind; active: boolean }> = [];
   fraudFlags: Array<Record<string, unknown>> = [];
+  // M3
+  payouts = new Map<string, PayoutRow>();
+  payoutItems: Array<{ payout_id: string; commission_id: string }> = [];
 
   constructor(seed = true) {
     if (seed) this.seedNotifications();
@@ -563,5 +568,98 @@ export class InMemoryRepo implements Repo {
       total_earned_cents: this.earnedCentsFor(p.id),
     }));
     return { rows: page, total };
+  }
+
+  /* ------------------------------------------------------------ M3: payouts */
+
+  async createPayoutRequest(input: {
+    affiliateId: string;
+    method: PayoutMethod;
+    methodDetails: unknown;
+  }): Promise<PayoutRow | null> {
+    const claimable = [...this.commissions.values()].filter(
+      (c) => c.affiliate_id === input.affiliateId && c.status === 'available',
+    );
+    if (claimable.length === 0) return null;
+
+    const amountCents = claimable.reduce((s, c) => s + c.amount_cents, 0);
+    const row: PayoutRow = {
+      id: randomUUID(),
+      affiliate_id: input.affiliateId,
+      amount_cents: amountCents,
+      status: 'requested',
+      method: input.method,
+      method_details: input.methodDetails,
+      requested_at: now(),
+      approved_at: null,
+      paid_at: null,
+      rejected_reason: null,
+      acted_by: null,
+      created_at: now(),
+    };
+    this.payouts.set(row.id, row);
+    for (const c of claimable) {
+      this.payoutItems.push({ payout_id: row.id, commission_id: c.id });
+      this.commissions.set(c.id, { ...c, status: 'requested', payout_id: row.id });
+    }
+    return row;
+  }
+
+  async getPayoutById(id: string) {
+    return this.payouts.get(id) ?? null;
+  }
+
+  async listPayoutsByAffiliate(affiliateId: string, limit = 50) {
+    return [...this.payouts.values()]
+      .filter((p) => p.affiliate_id === affiliateId)
+      .sort((a, b) => b.requested_at.localeCompare(a.requested_at))
+      .slice(0, limit);
+  }
+
+  async listPayoutsByStatus(
+    status: PayoutStatus | 'all',
+    params: { page: number; pageSize: number },
+  ): Promise<{ rows: AdminPayoutListRow[]; total: number }> {
+    let rows = [...this.payouts.values()];
+    if (status !== 'all') rows = rows.filter((p) => p.status === status);
+    rows.sort((a, b) => b.requested_at.localeCompare(a.requested_at));
+    const total = rows.length;
+    const start = (params.page - 1) * params.pageSize;
+    const page = rows.slice(start, start + params.pageSize).map((p) => {
+      const affiliate = this.profiles.get(p.affiliate_id);
+      return {
+        ...p,
+        affiliate_email: affiliate?.email ?? 'unknown',
+        affiliate_full_name: affiliate?.full_name ?? null,
+      };
+    });
+    return { rows: page, total };
+  }
+
+  async approveAndPayPayout(id: string, actedBy: string): Promise<PayoutRow> {
+    const payout = this.payouts.get(id);
+    if (!payout) throw new Error('payout not found');
+    if (payout.status !== 'requested') throw new Error(`payout is ${payout.status}, not requested`);
+    const paidAt = now();
+    const updated: PayoutRow = { ...payout, status: 'paid', approved_at: paidAt, paid_at: paidAt, acted_by: actedBy };
+    this.payouts.set(id, updated);
+    for (const item of this.payoutItems.filter((i) => i.payout_id === id)) {
+      const c = this.commissions.get(item.commission_id);
+      if (c) this.commissions.set(c.id, { ...c, status: 'paid' });
+    }
+    return updated;
+  }
+
+  async rejectPayout(id: string, actedBy: string, reason: string): Promise<PayoutRow> {
+    const payout = this.payouts.get(id);
+    if (!payout) throw new Error('payout not found');
+    if (payout.status !== 'requested') throw new Error(`payout is ${payout.status}, not requested`);
+    const updated: PayoutRow = { ...payout, status: 'rejected', rejected_reason: reason, acted_by: actedBy };
+    this.payouts.set(id, updated);
+    for (const item of this.payoutItems.filter((i) => i.payout_id === id)) {
+      const c = this.commissions.get(item.commission_id);
+      if (c) this.commissions.set(c.id, { ...c, status: 'available', payout_id: null });
+    }
+    return updated;
   }
 }

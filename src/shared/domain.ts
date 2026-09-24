@@ -25,6 +25,9 @@ export type CommissionKind = (typeof COMMISSION_KIND)[number];
 export const PAYOUT_STATUS = ['requested', 'approved', 'paid', 'rejected'] as const;
 export type PayoutStatus = (typeof PAYOUT_STATUS)[number];
 
+export const PAYOUT_METHOD = ['paypal', 'cashapp', 'bank', 'other'] as const;
+export type PayoutMethod = (typeof PAYOUT_METHOD)[number];
+
 export const REFERRAL_STATUS = ['trial', 'active', 'cancelled', 'refunded'] as const;
 export type ReferralStatus = (typeof REFERRAL_STATUS)[number];
 

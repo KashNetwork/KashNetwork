@@ -1,5 +1,6 @@
-import type { ClickLinkKind, CommissionKind } from '@/shared';
+import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
 import type {
+  AdminPayoutListRow,
   AdminUserListParams,
   AdminUserListRow,
   AffiliateStats,
@@ -10,6 +11,7 @@ import type {
   NewProfile,
   NotificationRow,
   PaymentEventRow,
+  PayoutRow,
   ProfileRow,
   ReferralRow,
   SessionKind,
@@ -174,4 +176,28 @@ export interface Repo {
   // dashboard aggregates
   affiliateStats(affiliateId: string): Promise<AffiliateStats>;
   paymentsForEmail(email: string): Promise<PaymentEventRow[]>;
+
+  /* ----------------------------------------------------------- M3: payouts */
+
+  // Atomically claims every currently-'available' commission for this
+  // affiliate into one new payout ('requested', amount = their sum), and
+  // flips each claimed commission to 'requested' with payout_id set — one
+  // request cashes out the whole available balance, not an itemized pick.
+  // Returns null if there was nothing available to claim (race with another
+  // request, or balance dropped between the caller's own check and this call).
+  createPayoutRequest(input: {
+    affiliateId: string;
+    method: PayoutMethod;
+    methodDetails: unknown;
+  }): Promise<PayoutRow | null>;
+  getPayoutById(id: string): Promise<PayoutRow | null>;
+  listPayoutsByAffiliate(affiliateId: string, limit?: number): Promise<PayoutRow[]>;
+  listPayoutsByStatus(
+    status: PayoutStatus | 'all',
+    params: { page: number; pageSize: number },
+  ): Promise<{ rows: AdminPayoutListRow[]; total: number }>;
+  // One-click "Approve & Mark Paid": payout -> paid, every linked commission -> paid.
+  approveAndPayPayout(id: string, actedBy: string): Promise<PayoutRow>;
+  // payout -> rejected, every linked commission reverts to 'available' (not forfeited).
+  rejectPayout(id: string, actedBy: string, reason: string): Promise<PayoutRow>;
 }

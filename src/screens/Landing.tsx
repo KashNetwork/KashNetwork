@@ -12,9 +12,8 @@ import { YellowSmear } from '@/components/text-accents';
 import { VideoGate } from '@/components/VideoGate';
 import { useRefTracking } from '@/lib/useRefTracking';
 
-// TODO(client): real Wistia video. Placeholder = Big Buck Bunny 480p (~10 min).
-const PLACEHOLDER_VIDEO =
-  'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.480p.vp9.webm';
+const VSL_SRC = '/sales/vsl.mp4';
+const VSL_PREVIEW_SRC = '/sales/vsl-preview.mp4';
 
 const INK = '#04184E';
 
@@ -86,7 +85,12 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
               }}
             />
             <div className="rounded-[22px] bg-white p-1.5 shadow-xl ring-1 ring-slate-200/80 sm:rounded-[26px] sm:p-2">
-              <VideoGate src={PLACEHOLDER_VIDEO} ref={ref} onRevealContent={() => setRevealed(true)} />
+              <VideoGate
+                src={VSL_SRC}
+                previewSrc={VSL_PREVIEW_SRC}
+                ref={ref}
+                onRevealContent={() => setRevealed(true)}
+              />
             </div>
           </div>
         </section>

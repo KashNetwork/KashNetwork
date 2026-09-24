@@ -22,3 +22,7 @@ next-env.d.ts
 # local supabase
 supabase/.branches
 supabase/.temp
+
+# raw video source uploads — transcode to public/sales/vsl*.mp4 before committing
+public/sales/*.mov
+public/sales/*raw*

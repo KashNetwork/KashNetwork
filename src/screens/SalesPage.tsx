@@ -1,9 +1,13 @@
 'use client';
 
-import { BadgeCheck, CircleDollarSign, CircleMinus, Play, Sparkles, UserRound } from "lucide-react";
+import { BadgeCheck, CircleDollarSign, CircleMinus, Sparkles, UserRound } from "lucide-react";
 import { salesSections, type Block, type Section } from "@/content/sales-page";
 import { RedUnderline, YellowSmear } from "@/components/text-accents";
 import { LiveNotifications } from "@/components/LiveNotifications";
+import { VslPlayer } from "@/components/VslPlayer";
+
+const VSL_SRC = "/sales/vsl.mp4";
+const VSL_PREVIEW_SRC = "/sales/vsl-preview.mp4";
 
 const ink = "rgb(4, 24, 78)";
 const lime = "#75ef4e";
@@ -417,22 +421,8 @@ function Badge({ b }: { b: Block }) {
 
 function Video() {
   return (
-    <div
-      className="flex w-full items-center justify-center"
-      style={{
-        maxWidth: 802,
-        aspectRatio: "802 / 451",
-        background: "linear-gradient(#2563eb 0%, #09245f 100%)",
-        borderRadius: 20,
-      }}
-    >
-      <Play
-        aria-hidden="true"
-        fill="none"
-        stroke="white"
-        strokeWidth={1.5}
-        style={{ width: "clamp(64px, 12vw, 143px)", height: "clamp(66px, 12.3vw, 147px)" }}
-      />
+    <div className="flex w-full justify-center">
+      <VslPlayer src={VSL_SRC} previewSrc={VSL_PREVIEW_SRC} />
     </div>
   );
 }

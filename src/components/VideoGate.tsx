@@ -11,15 +11,22 @@ import { useAuth } from '@/lib/auth';
  * Keeps play/pause, mute, and fullscreen. Pauses + shows the email gate at
  * VIDEO_GATE.emailGateAt; reveals the page at VIDEO_GATE.contentRevealAt.
  *
+ * Before the first play, a short muted clip (`previewSrc`) loops as the
+ * thumbnail instead of a static poster. Once the video ends, it freezes on
+ * its last frame (no loop, no reset, no play button covering it) — the VSL's
+ * closing frame is itself a call-to-action graphic.
+ *
  * To move to Wistia: swap the <video> for the embed and the 'timeupdate'
  * listener for the Wistia player API. The gating logic is unchanged.
  */
 export function VideoGate({
   src,
+  previewSrc,
   ref: refCode,
   onRevealContent,
 }: {
   src: string;
+  previewSrc?: string;
   ref?: string;
   onRevealContent: () => void;
 }) {
@@ -30,7 +37,9 @@ export function VideoGate({
   const [unlocked, setUnlocked] = useState(Boolean(me));
   const [gateVisible, setGateVisible] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [muted, setMuted] = useState(false);
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -51,21 +60,32 @@ export function VideoGate({
     };
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
+    const onEnded = () => setEnded(true);
     v.addEventListener('timeupdate', onTime);
     v.addEventListener('play', onPlay);
     v.addEventListener('pause', onPause);
+    v.addEventListener('ended', onEnded);
     return () => {
       v.removeEventListener('timeupdate', onTime);
       v.removeEventListener('play', onPlay);
       v.removeEventListener('pause', onPause);
+      v.removeEventListener('ended', onEnded);
     };
   }, [unlocked, revealed, onRevealContent]);
 
   const togglePlay = () => {
     const v = videoRef.current;
     if (!v || gateVisible) return;
-    if (v.paused) void v.play();
-    else v.pause();
+    if (v.paused) {
+      if (!started) setStarted(true);
+      if (v.ended) {
+        v.currentTime = 0;
+        setEnded(false);
+      }
+      void v.play();
+    } else {
+      v.pause();
+    }
   };
   const toggleMute = () => {
     const v = videoRef.current;
@@ -112,8 +132,26 @@ export function VideoGate({
         className="aspect-video w-full"
       />
 
-      {/* center play button when paused (gate not up) */}
-      {!playing && !gateVisible && (
+      {/* looping muted preview clip stands in for a static thumbnail until the
+          visitor presses play — autoplay+muted so it can start without a
+          user gesture. Swapped out (unmounted) the moment they start it. */}
+      {previewSrc && !started && (
+        <video
+          src={previewSrc}
+          autoPlay
+          muted
+          loop
+          playsInline
+          disablePictureInPicture
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+
+      {/* center play button when paused (gate not up, video hasn't just
+          ended — the VSL's last frame is its own call-to-action graphic and
+          shouldn't be covered) */}
+      {!playing && !gateVisible && !ended && (
         <button
           type="button"
           onClick={togglePlay}

@@ -34,6 +34,12 @@ export type ReferralStatus = (typeof REFERRAL_STATUS)[number];
 export const CLICK_LINK_KIND = ['landing', 'sales', 'checkout'] as const;
 export type ClickLinkKind = (typeof CLICK_LINK_KIND)[number];
 
+export const SEQUENCE_STATUS = ['active', 'converted', 'completed', 'stopped'] as const;
+export type SequenceStatus = (typeof SEQUENCE_STATUS)[number];
+
+export const EMAIL_DIRECTION = ['outbound', 'inbound'] as const;
+export type EmailDirection = (typeof EMAIL_DIRECTION)[number];
+
 // --- money constants (client-confirmed in writing, 2026-09-25) ---
 export const MONEY = {
   trialPriceCents: 100,

@@ -4,6 +4,7 @@ import { getDb } from '@/server/db';
 import { badRequest, clientIp, conflict, ok, readJson, route, userAgent } from '@/server/http';
 import { getCookie, issueSession, REF_COOKIE } from '@/server/auth/session';
 import { presentMe } from '@/server/services/account';
+import { resolveAttribution } from '@/server/services/attribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,6 +72,24 @@ export const POST = route(async (req) => {
     signup_ip: clientIp(req),
     signup_user_agent: userAgent(req),
   });
+
+  // Kick off the 30-day nurture sequence. Whoever gets credit for this lead
+  // (their ref code, or admin if none) is whose link goes in these emails —
+  // same resolution the payment side uses, so it's consistent if they later buy.
+  // Never let this block account creation itself — the funnel's core job
+  // (create the free account, log them in) must succeed even if attribution
+  // resolution has a bad day (e.g. no admin profile seeded yet).
+  try {
+    const attribution = await resolveAttribution(db, profile, { refCode });
+    await db.createLeadState({
+      profileId: profile.id,
+      sequence: 'free_nurture',
+      emailAffiliateId: attribution.affiliateId,
+      nextSendAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn('[leads] could not start nurture sequence for', profile.id, (e as Error).message);
+  }
 
   await issueSession(profile.id, 'lead', { ip: clientIp(req), userAgent: userAgent(req) });
   return ok({ me: presentMe(profile), created: true }, 201);

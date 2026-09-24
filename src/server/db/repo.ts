@@ -1,4 +1,4 @@
-import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
+import type { ClickLinkKind, CommissionKind, EmailDirection, PayoutMethod, PayoutStatus } from '@/shared';
 import type {
   AdminPayoutListRow,
   AdminUserListParams,
@@ -6,8 +6,11 @@ import type {
   AffiliateStats,
   ClickRow,
   CommissionRow,
+  DueLeadRow,
   EmailChangeRow,
+  EmailMessageRow,
   FraudFlagInput,
+  LeadStateRow,
   NewProfile,
   NotificationRow,
   PaymentEventRow,
@@ -200,4 +203,32 @@ export interface Repo {
   approveAndPayPayout(id: string, actedBy: string): Promise<PayoutRow>;
   // payout -> rejected, every linked commission reverts to 'available' (not forfeited).
   rejectPayout(id: string, actedBy: string, reason: string): Promise<PayoutRow>;
+
+  /* ------------------------------------------------------ M3: email nurture */
+
+  createLeadState(input: {
+    profileId: string;
+    sequence: string;
+    emailAffiliateId: string | null;
+    nextSendAt: string;
+  }): Promise<LeadStateRow>;
+  getLeadStateByProfile(profileId: string): Promise<LeadStateRow | null>;
+  updateLeadState(profileId: string, patch: Partial<LeadStateRow>): Promise<LeadStateRow>;
+  // due = sequence_status = 'active' and next_send_at <= now, joined with email/name to send.
+  listLeadsDueForSend(nowIso: string, limit: number): Promise<DueLeadRow[]>;
+
+  createEmailMessage(input: {
+    profileId: string | null;
+    direction: EmailDirection;
+    fromAddr: string;
+    toAddr: string;
+    subject: string | null;
+    bodyText: string | null;
+    bodyHtml: string | null;
+    sequenceStep?: number | null;
+    providerMessageId?: string | null;
+    inReplyTo?: string | null;
+    aiGenerated?: boolean;
+  }): Promise<EmailMessageRow>;
+  listEmailMessagesByProfile(profileId: string, limit?: number): Promise<EmailMessageRow[]>;
 }

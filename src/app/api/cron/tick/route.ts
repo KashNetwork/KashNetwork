@@ -3,6 +3,7 @@ import { config } from '@/server/config';
 import { getDb } from '@/server/db';
 import { ok, route, unauthorized } from '@/server/http';
 import { processPaymentEvent } from '@/server/services/payments';
+import { runNurtureSequenceTick } from '@/server/services/email-sequence';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,8 @@ export const dynamic = 'force-dynamic';
  *  - downgrade subscriptions whose cancel-at-period-end date has passed
  *    (belt-and-braces in case the Explodely IPN is late or missing)
  *  - retry any payment events that failed to process
+ *  - send the next due step of the free-lead nurture sequence to anyone
+ *    who's due (stops automatically once they convert — see payments.ts)
  */
 async function tick() {
   const db = await getDb();
@@ -87,7 +90,9 @@ async function tick() {
     }
   }
 
-  return { promoted, expired, retried };
+  const nurture = await runNurtureSequenceTick(db);
+
+  return { promoted, expired, retried, nurture };
 }
 
 function authed(req: Request): boolean {

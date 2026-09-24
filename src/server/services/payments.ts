@@ -2,6 +2,7 @@ import { DEFAULTS, MONEY, type PaymentEvent } from '@/shared';
 import type { ProfileRow, Repo, SubscriptionRow } from '../db/index';
 import { activateAffiliate, deactivateAffiliate } from './affiliate';
 import { resolveAttribution } from './attribution';
+import { markLeadConverted } from './email-sequence';
 import { flagChargeback, flagSelfReferral } from './fraud';
 
 const DAY = 86_400_000;
@@ -89,6 +90,9 @@ async function onTrialStarted(repo: Repo, event: PaymentEvent, _peId: string): P
     await repo.updateProfile(profile.id, { account_type: 'paid' });
   }
   await activateAffiliate(repo, { ...profile, account_type: 'paid' });
+
+  // purchase confirmed -> the free-lead nurture sequence stops immediately
+  await markLeadConverted(repo, profile.id);
 
   // $0 commission on the trial — nothing to create
   return 'trial_started:paid+affiliate';

@@ -205,4 +205,62 @@ describe('SqlRepo payouts via PGlite', () => {
   });
 });
 
+describe('SqlRepo email nurture via PGlite', () => {
+  it('creates, updates, lists-due, and logs messages against real Postgres', async () => {
+    const lead = await repo.createProfile({ email: 'sql-lead-nurture@gmail.com', account_type: 'free' });
+    const aff = await repo.createProfile({ email: 'sql-nurture-aff@gmail.com', account_type: 'paid' });
+    await repo.updateProfile(aff.id, { is_affiliate: true, affiliate_code: 'SQLNURT' });
+
+    const past = new Date(Date.now() - 1000).toISOString();
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+
+    const state = await repo.createLeadState({
+      profileId: lead.id,
+      sequence: 'free_nurture',
+      emailAffiliateId: aff.id,
+      nextSendAt: past,
+    });
+    expect(state.sequence_step).toBe(0);
+    expect(state.sequence_status).toBe('active');
+
+    const fetched = await repo.getLeadStateByProfile(lead.id);
+    expect(fetched?.email_affiliate_id).toBe(aff.id);
+
+    // due now (next_send_at in the past)
+    const due = await repo.listLeadsDueForSend(new Date().toISOString(), 10);
+    expect(due.some((d) => d.profile_id === lead.id && d.email === 'sql-lead-nurture@gmail.com')).toBe(true);
+
+    // push it into the future — no longer due
+    await repo.updateLeadState(lead.id, { next_send_at: future, sequence_step: 1 });
+    const due2 = await repo.listLeadsDueForSend(new Date().toISOString(), 10);
+    expect(due2.some((d) => d.profile_id === lead.id)).toBe(false);
+
+    const msg = await repo.createEmailMessage({
+      profileId: lead.id,
+      direction: 'outbound',
+      fromAddr: 'harley@go.kash.network',
+      toAddr: 'sql-lead-nurture@gmail.com',
+      subject: 'Test subject',
+      bodyText: 'body',
+      bodyHtml: '<p>body</p>',
+      sequenceStep: 0,
+      providerMessageId: 'msg_123',
+    });
+    expect(msg.direction).toBe('outbound');
+
+    const messages = await repo.listEmailMessagesByProfile(lead.id);
+    expect(messages).toHaveLength(1);
+    expect(messages[0]!.subject).toBe('Test subject');
+
+    // converting stops it — enum + timestamptz casts on the patch
+    const converted = await repo.updateLeadState(lead.id, {
+      sequence_status: 'converted',
+      converted_at: new Date().toISOString(),
+      next_send_at: null,
+    });
+    expect(converted.sequence_status).toBe('converted');
+    expect(converted.next_send_at).toBeNull();
+  });
+});
+
 type ProfileDetails = Record<string, unknown>;

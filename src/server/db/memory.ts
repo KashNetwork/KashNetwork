@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
+import type { ClickLinkKind, CommissionKind, EmailDirection, PayoutMethod, PayoutStatus } from '@/shared';
 import type { Repo } from './repo';
 import type {
   AdminPayoutListRow,
@@ -8,8 +8,11 @@ import type {
   AffiliateStats,
   ClickRow,
   CommissionRow,
+  DueLeadRow,
   EmailChangeRow,
+  EmailMessageRow,
   FraudFlagInput,
+  LeadStateRow,
   NewProfile,
   NotificationRow,
   PaymentEventRow,
@@ -44,6 +47,8 @@ export class InMemoryRepo implements Repo {
   // M3
   payouts = new Map<string, PayoutRow>();
   payoutItems: Array<{ payout_id: string; commission_id: string }> = [];
+  leadStates = new Map<string, LeadStateRow>();
+  emailMessages: EmailMessageRow[] = [];
 
   constructor(seed = true) {
     if (seed) this.seedNotifications();
@@ -661,5 +666,90 @@ export class InMemoryRepo implements Repo {
       if (c) this.commissions.set(c.id, { ...c, status: 'available', payout_id: null });
     }
     return updated;
+  }
+
+  /* -------------------------------------------------------- M3: email nurture */
+
+  async createLeadState(input: {
+    profileId: string;
+    sequence: string;
+    emailAffiliateId: string | null;
+    nextSendAt: string;
+  }): Promise<LeadStateRow> {
+    const row: LeadStateRow = {
+      profile_id: input.profileId,
+      sequence: input.sequence,
+      sequence_step: 0,
+      next_send_at: input.nextSendAt,
+      sequence_status: 'active',
+      email_affiliate_id: input.emailAffiliateId,
+      entered_at: now(),
+      converted_at: null,
+      updated_at: now(),
+    };
+    this.leadStates.set(input.profileId, row);
+    return row;
+  }
+
+  async getLeadStateByProfile(profileId: string) {
+    return this.leadStates.get(profileId) ?? null;
+  }
+
+  async updateLeadState(profileId: string, patch: Partial<LeadStateRow>) {
+    const existing = this.leadStates.get(profileId);
+    if (!existing) throw new Error('lead_state not found');
+    const updated = { ...existing, ...patch, updated_at: now() };
+    this.leadStates.set(profileId, updated);
+    return updated;
+  }
+
+  async listLeadsDueForSend(nowIso: string, limit: number): Promise<DueLeadRow[]> {
+    return [...this.leadStates.values()]
+      .filter((l) => l.sequence_status === 'active' && l.next_send_at !== null && l.next_send_at <= nowIso)
+      .sort((a, b) => (a.next_send_at ?? '').localeCompare(b.next_send_at ?? ''))
+      .slice(0, limit)
+      .map((l) => {
+        const p = this.profiles.get(l.profile_id);
+        return { ...l, email: p?.email ?? '', full_name: p?.full_name ?? null };
+      });
+  }
+
+  async createEmailMessage(input: {
+    profileId: string | null;
+    direction: EmailDirection;
+    fromAddr: string;
+    toAddr: string;
+    subject: string | null;
+    bodyText: string | null;
+    bodyHtml: string | null;
+    sequenceStep?: number | null;
+    providerMessageId?: string | null;
+    inReplyTo?: string | null;
+    aiGenerated?: boolean;
+  }): Promise<EmailMessageRow> {
+    const row: EmailMessageRow = {
+      id: randomUUID(),
+      profile_id: input.profileId,
+      direction: input.direction,
+      from_addr: input.fromAddr,
+      to_addr: input.toAddr,
+      subject: input.subject,
+      body_text: input.bodyText,
+      body_html: input.bodyHtml,
+      sequence_step: input.sequenceStep ?? null,
+      provider_message_id: input.providerMessageId ?? null,
+      in_reply_to: input.inReplyTo ?? null,
+      ai_generated: input.aiGenerated ?? false,
+      created_at: now(),
+    };
+    this.emailMessages.push(row);
+    return row;
+  }
+
+  async listEmailMessagesByProfile(profileId: string, limit = 50) {
+    return this.emailMessages
+      .filter((m) => m.profile_id === profileId)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, limit);
   }
 }

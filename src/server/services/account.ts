@@ -29,7 +29,7 @@ export interface MeResponse {
   tabs: TabKey[];
 }
 
-function affiliateLinks(code: string) {
+export function affiliateLinks(code: string) {
   const base = config.publicSiteUrl.replace(/\/$/, '');
   return {
     landing: `${base}/trial?ref=${encodeURIComponent(code)}`,

@@ -3,11 +3,13 @@ import type {
   ClickLinkKind,
   CommissionKind,
   CommissionStatus,
+  EmailDirection,
   FreeVariant,
   PaymentEventType,
   PayoutMethod,
   PayoutStatus,
   ReferralStatus,
+  SequenceStatus,
   SubscriptionState,
   UserRole,
 } from '@/shared';
@@ -239,4 +241,40 @@ export interface PayoutRow {
 export interface AdminPayoutListRow extends PayoutRow {
   affiliate_email: string;
   affiliate_full_name: string | null;
+}
+
+/* ------------------------------------------------------- M3: email nurture */
+
+export interface LeadStateRow {
+  profile_id: string;
+  sequence: string;
+  sequence_step: number;
+  next_send_at: string | null;
+  sequence_status: SequenceStatus;
+  email_affiliate_id: string | null;
+  entered_at: string;
+  converted_at: string | null;
+  updated_at: string;
+}
+
+export interface EmailMessageRow {
+  id: string;
+  profile_id: string | null;
+  direction: EmailDirection;
+  from_addr: string;
+  to_addr: string;
+  subject: string | null;
+  body_text: string | null;
+  body_html: string | null;
+  sequence_step: number | null;
+  provider_message_id: string | null;
+  in_reply_to: string | null;
+  ai_generated: boolean;
+  created_at: string;
+}
+
+/** A lead_state row joined with enough of the profile to actually send. */
+export interface DueLeadRow extends LeadStateRow {
+  email: string;
+  full_name: string | null;
 }

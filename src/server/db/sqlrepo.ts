@@ -1,4 +1,4 @@
-import type { ClickLinkKind, CommissionKind, PayoutMethod, PayoutStatus } from '@/shared';
+import type { ClickLinkKind, CommissionKind, EmailDirection, PayoutMethod, PayoutStatus } from '@/shared';
 import { MONEY } from '@/shared';
 import type { Repo } from './repo';
 import type { SqlClient } from './sql';
@@ -9,8 +9,11 @@ import type {
   AffiliateStats,
   ClickRow,
   CommissionRow,
+  DueLeadRow,
   EmailChangeRow,
+  EmailMessageRow,
   FraudFlagInput,
+  LeadStateRow,
   NewProfile,
   NotificationRow,
   PaymentEventRow,
@@ -830,5 +833,109 @@ export class SqlRepo implements Repo {
       [id],
     );
     return payout;
+  }
+
+  /* -------------------------------------------------------- M3: email nurture */
+
+  async createLeadState(input: {
+    profileId: string;
+    sequence: string;
+    emailAffiliateId: string | null;
+    nextSendAt: string;
+  }): Promise<LeadStateRow> {
+    return one(
+      await this.db.query<LeadStateRow>(
+        `insert into lead_state (profile_id, sequence, sequence_step, next_send_at, sequence_status, email_affiliate_id)
+         values ($1::uuid, $2, 0, $3::timestamptz, 'active'::sequence_status, $4::uuid)
+         returning *`,
+        [input.profileId, input.sequence, input.nextSendAt, input.emailAffiliateId],
+      ),
+    )!;
+  }
+
+  async getLeadStateByProfile(profileId: string) {
+    return one(
+      await this.db.query<LeadStateRow>('select * from lead_state where profile_id = $1::uuid', [profileId]),
+    );
+  }
+
+  async updateLeadState(profileId: string, patch: Partial<LeadStateRow>) {
+    const casts: Record<string, string> = {
+      sequence: '',
+      sequence_step: '::int',
+      next_send_at: '::timestamptz',
+      sequence_status: '::sequence_status',
+      email_affiliate_id: '::uuid',
+      converted_at: '::timestamptz',
+    };
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    for (const [k, v] of Object.entries(patch)) {
+      if (!(k in casts)) continue;
+      vals.push(v);
+      sets.push(`${k} = $${vals.length}${casts[k]}`);
+    }
+    vals.push(profileId);
+    return one(
+      await this.db.query<LeadStateRow>(
+        `update lead_state set ${sets.join(', ')} where profile_id = $${vals.length}::uuid returning *`,
+        vals,
+      ),
+    )!;
+  }
+
+  async listLeadsDueForSend(nowIso: string, limit: number): Promise<DueLeadRow[]> {
+    return this.db.query<DueLeadRow>(
+      `select ls.*, p.email, p.full_name
+       from lead_state ls join profiles p on p.id = ls.profile_id
+       where ls.sequence_status = 'active'::sequence_status and ls.next_send_at <= $1::timestamptz
+       order by ls.next_send_at asc
+       limit $2`,
+      [nowIso, limit],
+    );
+  }
+
+  async createEmailMessage(input: {
+    profileId: string | null;
+    direction: EmailDirection;
+    fromAddr: string;
+    toAddr: string;
+    subject: string | null;
+    bodyText: string | null;
+    bodyHtml: string | null;
+    sequenceStep?: number | null;
+    providerMessageId?: string | null;
+    inReplyTo?: string | null;
+    aiGenerated?: boolean;
+  }): Promise<EmailMessageRow> {
+    return one(
+      await this.db.query<EmailMessageRow>(
+        `insert into email_messages
+           (profile_id, direction, from_addr, to_addr, subject, body_text, body_html,
+            sequence_step, provider_message_id, in_reply_to, ai_generated)
+         values ($1::uuid,$2::email_direction,$3,$4,$5,$6,$7,$8,$9,$10,$11::boolean)
+         returning *`,
+        [
+          input.profileId,
+          input.direction,
+          input.fromAddr,
+          input.toAddr,
+          input.subject,
+          input.bodyText,
+          input.bodyHtml,
+          input.sequenceStep ?? null,
+          input.providerMessageId ?? null,
+          input.inReplyTo ?? null,
+          input.aiGenerated ?? false,
+        ],
+      ),
+    )!;
+  }
+
+  async listEmailMessagesByProfile(profileId: string, limit = 50) {
+    return this.db.query<EmailMessageRow>(
+      'select * from email_messages where profile_id = $1::uuid order by created_at desc limit $2',
+      [profileId, limit],
+    );
   }
 }

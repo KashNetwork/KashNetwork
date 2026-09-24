@@ -6,10 +6,9 @@ Grouped by how much they block. Send this before/alongside Milestone 1.
 
 ## A. Hard blockers — cannot finalise money logic without these
 
-1. **Commission split — confirm in writing.**
-   Current understanding: trial $1 → admin $1 / affiliate $0. Rebill $47 →
-   affiliate $30 / admin $17. The quote noted the source doc has conflicting
-   numbers elsewhere. Please confirm the single correct table.
+1. ~~**Commission split — confirm in writing.**~~ **CONFIRMED 2026-09-25:**
+   trial $1 → admin $1 / affiliate $0. Rebill $47 → affiliate $30 / admin $17.
+   Matches `MONEY` in src/shared/domain.ts, no code change needed.
 
 2. **Who eats payment processing fees?** Explodely + processor fees on the $1 and
    $47 — do they come out of the admin $17, or off the top before the split?

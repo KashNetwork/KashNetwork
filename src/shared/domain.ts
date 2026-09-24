@@ -34,7 +34,7 @@ export type ReferralStatus = (typeof REFERRAL_STATUS)[number];
 export const CLICK_LINK_KIND = ['landing', 'sales', 'checkout'] as const;
 export type ClickLinkKind = (typeof CLICK_LINK_KIND)[number];
 
-// --- money constants (NOT client-confirmed — see docs/CLIENT-QUESTIONS.md) ---
+// --- money constants (client-confirmed in writing, 2026-09-25) ---
 export const MONEY = {
   trialPriceCents: 100,
   monthlyPriceCents: 4700,
@@ -58,4 +58,7 @@ export const FUNNEL_PATH: Record<ClickLinkKind, string> = {
 };
 
 // video gate timestamps (seconds)
-export const VIDEO_GATE = { emailGateAt: 113, contentRevealAt: 215 } as const;
+// emailGateAt: the audio says "...in less than 24 hours" then a beat later
+// "BOOM" as the proof screenshot flashes in — 114.4s sits right in that gap
+// (caption finishes fading ~114.3-114.4s, the flash/reveal starts ~114.5s).
+export const VIDEO_GATE = { emailGateAt: 114.4, contentRevealAt: 215 } as const;

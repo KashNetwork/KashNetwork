@@ -44,6 +44,19 @@ export const POST = route(async (req) => {
   if (!parsed.success) throw badRequest('invalid_body', 'Pick a payout method and enter where to send it.');
 
   const db = await getDb();
+
+  // If the affiliate's own membership is past due, freeze cashouts until
+  // they're current again — commissions keep accruing normally underneath
+  // (nothing is forfeited yet, that only happens on actual cancellation),
+  // they just can't be paid out while the account is delinquent.
+  const ownSub = await db.getSubscriptionByProfile(profile.id);
+  if (ownSub?.state === 'past_due') {
+    throw badRequest(
+      'membership_past_due',
+      'Your membership payment is past due — cashouts are on hold until your billing is current. Your commissions are safe and still accruing.',
+    );
+  }
+
   const stats = await db.affiliateStats(profile.id);
   if (stats.availableCents < DEFAULTS.payoutMinCents) {
     throw badRequest(

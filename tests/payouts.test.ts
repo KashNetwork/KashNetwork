@@ -107,6 +107,24 @@ describe('affiliate payout requests', () => {
     );
     expect(res.status).toBe(403);
   });
+
+  it('freezes cashouts while the affiliate is past due on their own membership', async () => {
+    const aff = await makeAffiliate('pastdue@gmail.com', 'PASTDUE');
+    await seedAvailableCommission(aff.id, 6000);
+    await repo.createSubscription({ profile_id: aff.id, state: 'past_due' });
+    await issueSession(aff.id, 'user');
+
+    const res = await myPayoutsPOST(
+      json('/api/me/payouts', { method: 'paypal', methodDetails: 'pastdue@paypal.com' }),
+      noCtx,
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('membership_past_due');
+
+    // the commission itself is untouched — not forfeited, just not payable yet
+    const c = [...repo.commissions.values()].find((c) => c.affiliate_id === aff.id)!;
+    expect(c.status).toBe('available');
+  });
 });
 
 describe('admin payout approval', () => {

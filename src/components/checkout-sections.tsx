@@ -449,7 +449,7 @@ export function GuaranteeBanner({ wide = false }: { wide?: boolean }) {
             <ShieldCheck className="h-[13px] w-[13px]" style={{ color: "#3FDD1B" }} strokeWidth={2.4} />
           </span>
           {
-            "You're protected by our ‘Iron-Clad' 7-Day Satisfaction Guarantee:\nIf you do not earn your first 7 commissions in 7 days, just cancel."
+            "You're protected by our ‘Iron-Clad' 7-Day Satisfaction Guarantee:\nIf you do not get your first 7 referrals in 7 days, just cancel."
           }
         </p>
       </div>

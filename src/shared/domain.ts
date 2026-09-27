@@ -64,7 +64,7 @@ export const FUNNEL_PATH: Record<ClickLinkKind, string> = {
 };
 
 // video gate timestamps (seconds)
-// emailGateAt: the audio says "...in less than 24 hours" then a beat later
-// "BOOM" as the proof screenshot flashes in — 114.4s sits right in that gap
-// (caption finishes fading ~114.3-114.4s, the flash/reveal starts ~114.5s).
-export const VIDEO_GATE = { emailGateAt: 114.4, contentRevealAt: 215 } as const;
+// emailGateAt: pause right before the "BOOM" white-flash reveal. Pinpointed
+// frame-by-frame: still the fading caption at 114.46s, fully flashed to white
+// by 114.48s — 114.46s lands on the last frame before the flash.
+export const VIDEO_GATE = { emailGateAt: 114.46, contentRevealAt: 215 } as const;

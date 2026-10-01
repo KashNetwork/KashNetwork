@@ -193,9 +193,12 @@ export function VideoGate({
         </button>
       )}
 
-      {/* custom control bar — no seek, no timer, no settings menu */}
-      {!gateVisible && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+      {/* custom control bar — no seek, no timer, no settings menu. Hidden while
+          the video plays; it only shows when paused (tap the video to pause).
+          Also hidden once the video has ended so it can't sit over the red
+          arrows on the closing frame. */}
+      {!gateVisible && !playing && !ended && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5">
           <button
             type="button"
             onClick={togglePlay}

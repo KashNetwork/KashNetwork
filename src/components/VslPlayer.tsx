@@ -107,7 +107,10 @@ export function VslPlayer({ src, previewSrc }: { src: string; previewSrc?: strin
         </button>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+      {/* same rule as the Landing player: controls only show while paused, and
+          never over the closing frame */}
+      {!playing && !ended && (
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5">
         <button
           type="button"
           onClick={togglePlay}
@@ -133,6 +136,7 @@ export function VslPlayer({ src, previewSrc }: { src: string; previewSrc?: strin
           <Maximize2 className="h-5 w-5" />
         </button>
       </div>
+      )}
     </div>
   );
 }

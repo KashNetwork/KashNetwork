@@ -64,7 +64,12 @@ export const FUNNEL_PATH: Record<ClickLinkKind, string> = {
 };
 
 // video gate timestamps (seconds)
-// emailGateAt: pause right before the "BOOM" white-flash reveal. Pinpointed
-// frame-by-frame: still the fading caption at 114.46s, fully flashed to white
-// by 114.48s — 114.46s lands on the last frame before the flash.
-export const VIDEO_GATE = { emailGateAt: 114.46, contentRevealAt: 215 } as const;
+// emailGateAt: the pause has to land in the silent gap between the spoken
+// "...in less than 24 hours" and the "BOOM" sound. Measured from the audio
+// track (ffmpeg silencedetect, -30dB): "hours" ends ~114.12s, "boom" starts
+// ~114.56s — a 0.44s gap. 114.34s is its center; leaves ~0.2s of margin on
+// each side so audio-output latency (heard audio trails currentTime by
+// ~50-150ms) still lets the end of "hours" play out fully but never leaks
+// the front of "boom". (An earlier 114.46s target was inside the gap too,
+// but was pausing late — see the requestAnimationFrame polling in VideoGate.)
+export const VIDEO_GATE = { emailGateAt: 114.34, contentRevealAt: 215 } as const;

@@ -48,24 +48,53 @@ export function VideoGate({
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    // The email gate has to land inside a ~0.44s silent gap in the audio
+    // (between "...hours" and "boom"). 'timeupdate' only fires ~4x/second, so
+    // checking the gate there can pause up to ~250ms late — straight into
+    // "boom". A requestAnimationFrame loop checks every frame (~16ms) while
+    // the video is playing and the gate hasn't been passed yet.
+    let raf = 0;
+    const openGate = () => {
+      v.pause();
+      setGateVisible(true);
+    };
+    const pollGate = () => {
+      if (v.currentTime >= VIDEO_GATE.emailGateAt) {
+        openGate();
+        return;
+      }
+      if (!v.paused && !v.ended) raf = requestAnimationFrame(pollGate);
+    };
+
     const onTime = () => {
       if (!revealed && v.currentTime >= VIDEO_GATE.contentRevealAt) {
         setRevealed(true);
         onRevealContent();
       }
-      if (!unlocked && v.currentTime >= VIDEO_GATE.emailGateAt) {
-        v.pause();
-        setGateVisible(true);
+      // fallback only — the rAF loop above is what normally catches it
+      if (!unlocked && v.currentTime >= VIDEO_GATE.emailGateAt) openGate();
+    };
+    const onPlay = () => {
+      setPlaying(true);
+      if (!unlocked) {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(pollGate);
       }
     };
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
+    const onPause = () => {
+      setPlaying(false);
+      cancelAnimationFrame(raf);
+    };
     const onEnded = () => setEnded(true);
     v.addEventListener('timeupdate', onTime);
     v.addEventListener('play', onPlay);
     v.addEventListener('pause', onPause);
     v.addEventListener('ended', onEnded);
+    // the effect re-runs when `unlocked`/`revealed` flip; if the video is
+    // already mid-play at that moment, make sure polling is running.
+    if (!unlocked && !v.paused && !v.ended) raf = requestAnimationFrame(pollGate);
     return () => {
+      cancelAnimationFrame(raf);
       v.removeEventListener('timeupdate', onTime);
       v.removeEventListener('play', onPlay);
       v.removeEventListener('pause', onPause);

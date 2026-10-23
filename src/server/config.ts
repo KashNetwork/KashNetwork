@@ -39,6 +39,9 @@ export const config = {
     fromSupport: env.EMAIL_FROM_SUPPORT ?? 'Kash Support <support@app.kash.network>',
     // where the support form + admin alerts are delivered (a real inbox)
     supportInbox: env.SUPPORT_INBOX ?? 'support@app.kash.network',
+    // where replies to our emails go: an address Resend receives mail on, so the AI agent sees them
+    replyHarley: env.EMAIL_REPLY_HARLEY ?? 'harley@app.kash.network',
+    replySupport: env.EMAIL_REPLY_SUPPORT ?? 'support@app.kash.network',
     get enabled() {
       return Boolean(this.apiKey);
     },
@@ -62,6 +65,7 @@ export const config = {
   secrets: {
     inboundEmail: env.INBOUND_EMAIL_SECRET ?? '',
     cron: env.CRON_SECRET ?? '',
+    unsubscribe: env.UNSUBSCRIBE_SECRET ?? '',
   },
 
   leadSessionTtlDays: Number(env.LEAD_SESSION_TTL_DAYS ?? 3650),

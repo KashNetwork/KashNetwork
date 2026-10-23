@@ -1,6 +1,7 @@
 import { DEFAULTS, MONEY, type PaymentEvent } from '@/shared';
 import type { ProfileRow, Repo, SubscriptionRow } from '../db/index';
 import { activateAffiliate, deactivateAffiliate } from './affiliate';
+import { sendWelcomeEmail } from './welcome-email';
 import { resolveAttribution } from './attribution';
 import { markLeadConverted } from './email-sequence';
 import { flagChargeback, flagSelfReferral } from './fraud';
@@ -93,6 +94,11 @@ async function onTrialStarted(repo: Repo, event: PaymentEvent, _peId: string): P
 
   // purchase confirmed -> the free-lead nurture sequence stops immediately
   await markLeadConverted(repo, profile.id);
+
+  // welcome email with a sign-in link: buyers who paid without opening the video gate have no session
+  await sendWelcomeEmail(repo, profile.id, profile.email).catch((e) =>
+    console.warn('[payments] welcome email failed:', (e as Error).message),
+  );
 
   // $0 commission on the trial — nothing to create
   return 'trial_started:paid+affiliate';

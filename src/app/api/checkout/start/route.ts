@@ -25,7 +25,9 @@ export async function GET(req: Request) {
   if (ref) checkout.searchParams.set('tpa', ref);
 
   const session = await currentSession();
-  if (session?.profile.email) checkout.searchParams.set('checkout_email', session.profile.email);
+  const typed = url.searchParams.get('email')?.trim().toLowerCase();
+  const email = typed && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typed) ? typed : session?.profile.email;
+  if (email) checkout.searchParams.set('checkout_email', email);
 
   return NextResponse.redirect(checkout.toString(), 303);
 }

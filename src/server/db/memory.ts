@@ -10,6 +10,7 @@ import type {
   CommissionRow,
   DueLeadRow,
   EmailChangeRow,
+  AiThreadRow,
   EmailMessageRow,
   FraudFlagInput,
   LeadStateRow,
@@ -49,6 +50,9 @@ export class InMemoryRepo implements Repo {
   payoutItems: Array<{ payout_id: string; commission_id: string }> = [];
   leadStates = new Map<string, LeadStateRow>();
   emailMessages: EmailMessageRow[] = [];
+  settings = new Map<string, unknown>();
+  aiThreads = new Map<string, AiThreadRow>();
+  aiReplyLog: string[] = [];
 
   constructor(seed = true) {
     if (seed) this.seedNotifications();
@@ -246,7 +250,17 @@ export class InMemoryRepo implements Repo {
     const all = [...this.profiles.values()].filter((p) => p.role !== 'admin');
     const { MONEY } = await import('@/shared');
     let adminRevenueCents = 0;
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+    const reversed = new Set(
+      this.paymentEvents
+        .filter((e) => e.event_type === 'refunded' || e.event_type === 'chargeback')
+        .map((e) => e.external_txn_id),
+    );
     for (const e of this.paymentEvents) {
+      if (new Date(e.occurred_at) < monthStart) continue;
+      if (e.external_txn_id && reversed.has(e.external_txn_id)) continue;
       if (e.event_type === 'trial_started') adminRevenueCents += MONEY.adminTrialCents;
       else if (e.event_type === 'subscription_activated' || e.event_type === 'rebill_succeeded')
         adminRevenueCents += MONEY.adminRecurringCents;
@@ -261,6 +275,22 @@ export class InMemoryRepo implements Repo {
       totalProfiles: all.length,
       adminRevenueCents,
       payableCents,
+      recentActivity: [
+        ...this.paymentEvents.map((e) => ({
+          kind: 'payment' as const,
+          email: e.customer_email ?? null,
+          detail: e.event_type as string,
+          at: new Date(e.occurred_at).toISOString(),
+        })),
+        ...all.map((p) => ({
+          kind: 'signup' as const,
+          email: p.email as string | null,
+          detail: p.account_type as string,
+          at: new Date(p.created_at).toISOString(),
+        })),
+      ]
+        .sort((a, b) => (a.at < b.at ? 1 : -1))
+        .slice(0, 15),
     };
   }
 
@@ -744,6 +774,46 @@ export class InMemoryRepo implements Repo {
     };
     this.emailMessages.push(row);
     return row;
+  }
+
+  async getSetting<T = unknown>(key: string) {
+    return (this.settings.has(key) ? (this.settings.get(key) as T) : null) as T | null;
+  }
+
+  async setSetting(key: string, value: unknown) {
+    this.settings.set(key, value);
+  }
+
+  async getAiThread(profileId: string) {
+    return this.aiThreads.get(profileId) ?? null;
+  }
+
+  async recordAiReply(profileId: string) {
+    const nowIso = now();
+    const t = this.aiThreads.get(profileId);
+    const row: AiThreadRow = t
+      ? { ...t, message_count: t.message_count + 1, last_message_at: nowIso, first_reply_at: t.first_reply_at ?? nowIso }
+      : {
+          id: randomUUID(),
+          profile_id: profileId,
+          active: true,
+          first_reply_at: nowIso,
+          message_count: 1,
+          last_message_at: nowIso,
+          created_at: nowIso,
+        };
+    this.aiThreads.set(profileId, row);
+    this.aiReplyLog.push(nowIso);
+    return row;
+  }
+
+  async setAiThreadActive(profileId: string, active: boolean) {
+    const t = this.aiThreads.get(profileId);
+    if (t) this.aiThreads.set(profileId, { ...t, active });
+  }
+
+  async countAiRepliesSince(sinceIso: string) {
+    return this.aiReplyLog.filter((t) => t >= sinceIso).length;
   }
 
   async listEmailMessagesByProfile(profileId: string, limit = 50) {

@@ -110,9 +110,12 @@ export default function Landing({ initialRef }: { initialRef?: string }) {
               showPanel={false}
               wide
               showTrialSummary
+              embedCheckout={revealed}
             />
             <GuaranteeBanner wide />
             <VerifiedResults />
+            {/* legal links + gateway disclaimer: shown with the rest of the content, so they
+                don't distract while the visitor is watching the video */}
             <CheckoutFooter variant="plain" />
           </div>
         </div>

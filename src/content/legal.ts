@@ -1025,7 +1025,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "Due to the instantaneous, digital nature of our product and service delivery and the type of products sold (digital goods), all purchases/sales are final."
+        "x": "Due to the instantaneous, digital nature of our product and service delivery and the type of products sold (digital goods), the $1 trial payment is non-refundable, and any full subscription charge can be refunded if you request it within 30 days of the date of that charge."
       },
       {
         "t": "p",
@@ -1033,11 +1033,11 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "As such, refunds are not provided."
+        "x": "To request a refund of a subscription charge, contact support within 30 days of the date of that charge."
       },
       {
         "t": "p",
-        "x": "Your $1 trial payment provides immediate access to our platform and is non-refundable. If you choose to continue after the 7-day trial period, your subscription will renew automatically at the regular subscription price. All subscription payments are non-refundable once processed."
+        "x": "Your $1 trial payment covers 7 days of access and is non-refundable. To avoid being charged the full subscription price, cancel before the 7-day trial ends. If you are charged the full subscription price, you can request a refund within 30 days of the date of that charge."
       },
       {
         "t": "p",
@@ -1073,7 +1073,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You agree that all sales are final."
+        "x": "You agree that the $1 trial payment is non-refundable and that subscription charges can be refunded within 30 days of the charge, as described in our Refund Policy."
       },
       {
         "t": "p",
@@ -1157,7 +1157,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "We reserve the right to deny any refund request."
+        "x": "Refund requests for a subscription charge made within 30 days of the date of that charge will be approved. Requests made after 30 days are not eligible."
       },
       {
         "t": "h3",
@@ -1165,7 +1165,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You may cancel your subscription at any time to prevent future billing. Cancellation does not retroactively qualify you for a refund."
+        "x": "You may cancel your subscription at any time to prevent future billing. A subscription charge that has already been made can be refunded if you request it within 30 days of that charge."
       },
       {
         "t": "h2",
@@ -1352,7 +1352,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "Your $1 trial payment provides immediate access to our platform and is non-refundable. If you choose to continue after the 7-day trial period, your subscription will renew automatically at the regular subscription price. All subscription payments are non-refundable once processed."
+        "x": "Your $1 trial payment covers 7 days of access and is non-refundable. To avoid being charged the full subscription price, cancel before the 7-day trial ends. If you are charged the full subscription price, you can request a refund within 30 days of the date of that charge."
       },
       {
         "t": "p",
@@ -1380,7 +1380,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You may cancel your subscription at any time to prevent future billing. Cancellation does not retroactively qualify you for a refund."
+        "x": "You may cancel your subscription at any time to prevent future billing. A subscription charge that has already been made can be refunded if you request it within 30 days of that charge."
       },
       {
         "t": "p",
@@ -1392,7 +1392,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "We reserve the right to deny any refund requests."
+        "x": "Refund requests for a subscription charge made within 30 days of the date of that charge will be approved. Requests made after 30 days are not eligible."
       },
       {
         "t": "p",
@@ -1416,7 +1416,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You agree that all sales are final."
+        "x": "You agree that the $1 trial payment is non-refundable and that subscription charges can be refunded within 30 days of the charge, as described in our Refund Policy."
       },
       {
         "t": "p",

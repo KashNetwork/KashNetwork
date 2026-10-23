@@ -16,5 +16,6 @@ export const GET = route(async () => {
     totalProfiles: o.totalProfiles,
     adminRevenueCents: o.adminRevenueCents, // $1/trial + $17/rebill from payment events
     pendingPayoutsCents: o.payableCents, // affiliate commissions available / requested
+    recentActivity: o.recentActivity,
   });
 });

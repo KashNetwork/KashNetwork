@@ -5,6 +5,7 @@
 import type { AiProvider, EmailProvider, PaymentProvider } from '@/shared';
 import { config } from '../config';
 import { ExplodelyProvider } from './explodely';
+import { createRealAiProvider } from './ai-real';
 import { fakeAiProvider, fakeEmailProvider, fakePaymentProvider } from './fakes';
 import { ResendEmailProvider } from './resend';
 
@@ -23,9 +24,12 @@ export function getEmailProvider(): EmailProvider {
   return emailProvider;
 }
 
+let aiProvider: AiProvider | null = null;
+
 export function getAiProvider(): AiProvider {
-  // TODO(M3): return new OpenAiProvider(...) / GoogleAiProvider(...) when enabled
-  return fakeAiProvider;
+  if (aiProvider) return aiProvider;
+  aiProvider = config.ai.enabled ? createRealAiProvider() : fakeAiProvider;
+  return aiProvider;
 }
 
 export { config };

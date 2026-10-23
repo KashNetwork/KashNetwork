@@ -89,8 +89,14 @@ export class ExplodelyProvider implements PaymentProvider {
     url.searchParams.set('apikey', config.explodely.apiKey);
     url.searchParams.set('apiaction', 'cancelrebill');
     url.searchParams.set('mainorderid', externalSubId);
-    const res = await fetch(url, { method: 'GET' });
+    // Explodely sits behind Cloudflare, which blocks bare server requests — send a browser-like UA
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'user-agent': 'Mozilla/5.0 (compatible; KashNetwork/1.0; +https://kash.network)', accept: 'application/json' },
+      signal: AbortSignal.timeout(20_000),
+    });
     const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok) throw new Error(`explodely cancelrebill: HTTP ${res.status}`);
     if (body.error) throw new Error(`explodely cancelrebill: ${String(body.error)}`);
   }
 }

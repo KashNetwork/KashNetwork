@@ -274,6 +274,16 @@ export interface EmailMessageRow {
 }
 
 /** A lead_state row joined with enough of the profile to actually send. */
+export interface AiThreadRow {
+  id: string;
+  profile_id: string;
+  active: boolean;
+  first_reply_at: string | null;
+  message_count: number;
+  last_message_at: string | null;
+  created_at: string;
+}
+
 export interface DueLeadRow extends LeadStateRow {
   email: string;
   full_name: string | null;

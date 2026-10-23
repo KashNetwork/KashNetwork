@@ -11,6 +11,7 @@ import type {
   CommissionRow,
   DueLeadRow,
   EmailChangeRow,
+  AiThreadRow,
   EmailMessageRow,
   FraudFlagInput,
   LeadStateRow,
@@ -206,6 +207,15 @@ export class SqlRepo implements Repo {
   }
 
   async createClick(input: Omit<ClickRow, 'id' | 'created_at'>): Promise<ClickRow> {
+    // clicks.visitor_id references visitors(id); the kn_vid cookie is minted
+    // by the route, so make sure the visitor row exists first.
+    if (input.visitor_id) {
+      await this.db.query(
+        `insert into visitors (id, ip, user_agent) values ($1::uuid, $2::inet, $3)
+         on conflict (id) do update set last_seen_at = now()`,
+        [input.visitor_id, input.ip, input.user_agent],
+      );
+    }
     return (
       await this.db.query<ClickRow>(
         `insert into clicks (affiliate_id, link_kind, visitor_id, ip, user_agent, referer, landing_path)
@@ -298,12 +308,30 @@ export class SqlRepo implements Repo {
     const fin = await this.db.query<{ rev: string; payable: string }>(
       `select
          coalesce((select
-             count(*) filter (where event_type = 'trial_started') * $1
-           + count(*) filter (where event_type in ('subscription_activated','rebill_succeeded')) * $2
-           from payment_events), 0) as rev,
+             count(*) filter (where e.event_type = 'trial_started') * $1
+           + count(*) filter (where e.event_type in ('subscription_activated','rebill_succeeded')) * $2
+           from payment_events e
+           where e.occurred_at >= date_trunc('month', now())
+             and not exists (select 1 from payment_events r
+                             where r.external_txn_id = e.external_txn_id
+                               and r.event_type in ('refunded','chargeback'))), 0) as rev,
          coalesce((select sum(amount_cents) from commissions
                    where status in ('available','requested')), 0) as payable`,
       [MONEY.adminTrialCents, MONEY.adminRecurringCents],
+    );
+    const activity = await this.db.query<{
+      kind: 'payment' | 'signup';
+      email: string | null;
+      detail: string;
+      at: string | Date;
+    }>(
+      `select kind, email, detail, at from (
+         select 'payment' as kind, customer_email::text as email, event_type::text as detail, occurred_at as at
+           from payment_events
+         union all
+         select 'signup', email::text, account_type::text, created_at
+           from profiles where role <> 'admin'
+       ) x order by at desc limit 15`,
     );
     return {
       activePaid: Number(r.active_paid),
@@ -312,6 +340,7 @@ export class SqlRepo implements Repo {
       totalProfiles: Number(r.total),
       adminRevenueCents: Number(fin[0]?.rev ?? 0),
       payableCents: Number(fin[0]?.payable ?? 0),
+      recentActivity: activity.map((a) => ({ ...a, at: new Date(a.at).toISOString() })),
     };
   }
 
@@ -893,6 +922,51 @@ export class SqlRepo implements Repo {
        limit $2`,
       [nowIso, limit],
     );
+  }
+
+  async getSetting<T = unknown>(key: string): Promise<T | null> {
+    const rows = await this.db.query<{ value: T }>('select value from app_settings where key = $1', [key]);
+    return rows[0] ? rows[0].value : null;
+  }
+
+  async setSetting(key: string, value: unknown): Promise<void> {
+    await this.db.query(
+      `insert into app_settings (key, value) values ($1, $2::jsonb)
+       on conflict (key) do update set value = excluded.value, updated_at = now()`,
+      [key, JSON.stringify(value)],
+    );
+  }
+
+  async getAiThread(profileId: string): Promise<AiThreadRow | null> {
+    const rows = await this.db.query<AiThreadRow>('select * from ai_threads where profile_id = $1::uuid', [profileId]);
+    return rows[0] ?? null;
+  }
+
+  async recordAiReply(profileId: string): Promise<AiThreadRow> {
+    return (
+      await this.db.query<AiThreadRow>(
+        `insert into ai_threads (profile_id, first_reply_at, message_count, last_message_at)
+         values ($1::uuid, now(), 1, now())
+         on conflict (profile_id) do update set
+           message_count = ai_threads.message_count + 1,
+           last_message_at = now(),
+           first_reply_at = coalesce(ai_threads.first_reply_at, now())
+         returning *`,
+        [profileId],
+      )
+    )[0]!;
+  }
+
+  async setAiThreadActive(profileId: string, active: boolean): Promise<void> {
+    await this.db.query('update ai_threads set active = $2::boolean where profile_id = $1::uuid', [profileId, active]);
+  }
+
+  async countAiRepliesSince(sinceIso: string): Promise<number> {
+    const rows = await this.db.query<{ n: string }>(
+      `select count(*) as n from email_messages where ai_generated = true and direction = 'outbound' and created_at >= $1::timestamptz`,
+      [sinceIso],
+    );
+    return Number(rows[0]?.n ?? 0);
   }
 
   async createEmailMessage(input: {

@@ -1,8 +1,10 @@
 'use client';
 
+import { createContext, useContext } from "react";
 import { BadgeCheck, CircleDollarSign, CircleMinus, Sparkles, UserRound } from "lucide-react";
 import { salesSections, type Block, type Section } from "@/content/sales-page";
 import { RedUnderline, YellowSmear } from "@/components/text-accents";
+import { useRefTracking } from "@/lib/useRefTracking";
 import { LiveNotifications } from "@/components/LiveNotifications";
 import { VslPlayer } from "@/components/VslPlayer";
 
@@ -12,7 +14,12 @@ const VSL_PREVIEW_SRC = "/sales/vsl-preview.mp4";
 const ink = "rgb(4, 24, 78)";
 const lime = "#75ef4e";
 const limeGrad = "linear-gradient(#7ef450 0%, #5be030 100%)";
-const CHECKOUT = "/api/checkout/start";
+/**
+ * Where every "Activate My Commissions for $1" button goes. On the public page it is the original
+ * Checkout page; inside a free member's account the page passes onOpen so the button opens that same
+ * Checkout page without leaving the account.
+ */
+const CheckoutCtx = createContext<{ href: string; onOpen?: () => void }>({ href: "/secure-checkout" });
 
 /* Real client photos live in /public/sales/. Drop the files in with these exact
    names and they show up automatically (see public/sales/README.md). */
@@ -293,10 +300,19 @@ function Period({ b }: { b: Block }) {
 }
 
 function Cta({ b }: { b: Block }) {
+  const { href, onOpen } = useContext(CheckoutCtx);
   const button = (
     <div className="flex w-full flex-col items-center gap-3">
       <a
-        href={CHECKOUT}
+        href={href}
+        onClick={
+          onOpen
+            ? (e) => {
+                e.preventDefault();
+                onOpen();
+              }
+            : undefined
+        }
         className="flex w-full cursor-pointer items-center justify-center transition-transform hover:-translate-y-0.5"
         style={{
           maxWidth: 698,
@@ -694,15 +710,27 @@ function SectionView({ s }: { s: Section }) {
   );
 }
 
-export default function SalesPage({ embedded = false }: { embedded?: boolean }) {
+export default function SalesPage({
+  embedded = false,
+  onCheckout,
+}: {
+  embedded?: boolean;
+  onCheckout?: () => void;
+}) {
+  // logs the click and sets the 30-day referral cookie when the page is opened with ?ref=CODE
+  // (also inside a free member's "Harley's Story" tab, where the email link adds ?ref=CODE)
+  const ref = useRefTracking('sales');
+  const href = ref ? `/secure-checkout?ref=${encodeURIComponent(ref)}` : '/secure-checkout';
   return (
-    <div className="min-h-screen w-full antialiased" style={{ background: "#f7fbff" }}>
-      <div className="mx-auto w-full max-w-[1200px]" style={{ background: "#f7fbff" }}>
-        {salesSections.map((s, i) => (
-          <SectionView key={i} s={s} />
-        ))}
+    <CheckoutCtx.Provider value={{ href, onOpen: onCheckout }}>
+      <div className="min-h-screen w-full antialiased" style={{ background: "#f7fbff" }}>
+        <div className="mx-auto w-full max-w-[1200px]" style={{ background: "#f7fbff" }}>
+          {salesSections.map((s, i) => (
+            <SectionView key={i} s={s} />
+          ))}
+        </div>
+        {!embedded && <LiveNotifications location="sales" />}
       </div>
-      {!embedded && <LiveNotifications location="sales" />}
-    </div>
+    </CheckoutCtx.Provider>
   );
 }

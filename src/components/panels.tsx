@@ -19,6 +19,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import SalesPage from '@/screens/SalesPage';
+import SecureCheckout from '@/screens/Checkout';
 import {
   api,
   ApiError,
@@ -56,13 +57,48 @@ export type TabKey =
   | 'payouts'
   | 'admin';
 
-const SOON_M2 = 'Live in Milestone 2';
 const SOON_M4 = 'Live in Milestone 4';
+
+const ACTIVITY_NAMES: Record<string, string> = {
+  trial_started: 'New $1 Trial Paid Member',
+  subscription_activated: 'Subscription activated',
+  rebill_succeeded: '$47 renewal paid',
+  rebill_failed: 'Payment failed',
+  refunded: 'Refund',
+  chargeback: 'Chargeback',
+  cancel_requested: 'Cancellation requested',
+  subscription_cancelled: 'Membership cancelled',
+  reactivated: 'Reactivated',
+};
+function ACTIVITY_LABEL(a: { kind: string; detail: string }) {
+  if (a.kind === 'signup') return a.detail === 'paid' ? 'New Free Member' : 'New Lead';
+  return ACTIVITY_NAMES[a.detail] ?? a.detail;
+}
 
 /* --------------------------------------------------- Harley's Story (free) */
 
 function HarleysStory() {
   const { me } = useAuth();
+  // the Sales page's buttons open the original Checkout page here, inside the free account
+  const [checkout, setCheckout] = useState(false);
+  const openCheckout = () => {
+    setCheckout(true);
+    window.scrollTo({ top: 0 });
+  };
+  if (checkout) {
+    return (
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setCheckout(false)}
+          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-[#04184E] shadow ring-1 ring-slate-200 hover:bg-white"
+        >
+          ← Back to Harley's Story
+        </button>
+        <SecureCheckout />
+      </div>
+    );
+  }
   if (me?.freeVariant === 'downgraded') {
     return (
       <div className="grid min-h-screen place-items-center bg-[#eceef2] px-4">
@@ -80,15 +116,14 @@ function HarleysStory() {
             Your paid membership has ended. Reactivate for $47/month to get your dashboard and
             affiliate link back.
           </p>
-          <Btn className="mt-5 w-full" disabled>
+          <Btn className="mt-5 w-full" onClick={openCheckout}>
             Reactivate for $47/month
           </Btn>
-          <p className="mt-2 text-xs text-slate-400">{SOON_M2}</p>
         </div>
       </div>
     );
   }
-  return <SalesPage />;
+  return <SalesPage onCheckout={openCheckout} />;
 }
 
 /* ------------------------------------------------------ affiliate dashboard */
@@ -193,7 +228,7 @@ function DashboardPanel() {
   );
 }
 
-const PAYOUT_MIN_CENTS = 5000; // mirrors DEFAULTS.payoutMinCents in @/shared
+const PAYOUT_MIN_CENTS = 3000; // mirrors DEFAULTS.payoutMinCents in @/shared
 const PAYOUT_METHOD_LABEL: Record<string, string> = {
   paypal: 'PayPal',
   cashapp: 'Cash App',
@@ -367,20 +402,24 @@ function BuyTrafficPanel() {
           </div>
         </div>
 
+        {/* placeholder video until the final Buy Traffic video is supplied */}
         <div className="mt-5 aspect-video w-full overflow-hidden rounded-2xl bg-slate-900 ring-1 ring-slate-200">
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">
-            {/* TODO(client): embedded Buy Traffic video */}
-            Video — pending client
-          </div>
+          <iframe
+            src="https://www.youtube.com/embed/uhzTqBnIbjc"
+            title="Buy Traffic walkthrough"
+            className="h-full w-full"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          />
         </div>
 
         <a
-          href="https://example.com/traffic"
+          href="https://trafficzest.com/auth/signup?v=1.0.20&rft1=397a76f9-c3a7-455c-b887-fca3ca33676f"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white hover:bg-slate-800 sm:w-auto"
         >
-          {/* TODO(client): real Buy Traffic destination URL */}
           Open the traffic source
           <ArrowRight className="h-4 w-4" />
         </a>
@@ -713,12 +752,27 @@ function AdminDashboard() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel title="Recent activity" className="lg:col-span-2" bodyClassName="p-0">
-          <EmptyState
-            icon={History}
-            title="Nothing to show yet"
-            hint="Signups, upgrades, cancellations and payout requests will stream here."
-            soon={SOON_M2}
-          />
+          {data && data.recentActivity.length > 0 ? (
+            <ul className="divide-y divide-slate-100">
+              {data.recentActivity.map((a, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <span className="min-w-0 truncate">
+                    <span className="font-medium text-slate-800">{ACTIVITY_LABEL(a)}</span>
+                    <span className="ml-2 text-slate-400">{a.email ?? ''}</span>
+                  </span>
+                  <span className="shrink-0 text-xs text-slate-400">
+                    {new Date(a.at).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={History}
+              title="Nothing to show yet"
+              hint="Signups, upgrades, cancellations and refunds show up here as they happen."
+            />
+          )}
         </Panel>
         <Panel title="Quick actions" bodyClassName="p-0">
           <EmptyState

@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckoutGrid, VerifiedResults, GuaranteeBanner, CheckoutFooter } from "@/components/checkout-sections";
+import { useRefTracking } from "@/lib/useRefTracking";
 
 
 const ink = "#0B1220";
@@ -9,6 +10,7 @@ const navy = "#0B2A6B";
 const tintBg = "#F4F8FF";
 
 export default function SecureCheckout() {
+  useRefTracking('checkout');
   return (
     <div className="min-h-screen antialiased" style={{ background: tintBg, color: ink }}>
       {/* ---------- HEADER ---------- */}
@@ -67,7 +69,7 @@ export default function SecureCheckout() {
 
       </section>
 
-      <CheckoutGrid />
+      <CheckoutGrid embedCheckout />
       <VerifiedResults />
       <GuaranteeBanner />
       <CheckoutFooter />

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { getPaymentProvider } from '@/server/adapters';
 import { requirePaid } from '@/server/auth/guard';
 import { getDb } from '@/server/db';
-import { badRequest, notFound, ok, readJson, route } from '@/server/http';
+import { ApiError, badRequest, notFound, ok, readJson, route } from '@/server/http';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,13 @@ export const POST = route(async (req) => {
       try {
         await getPaymentProvider().cancelSubscription?.(sub.external_sub_id, true);
       } catch (e) {
+        // never show "cancelled" while the provider would keep billing the card
         console.warn('[subscription] provider cancel failed', (e as Error).message);
+        throw new ApiError(
+          502,
+          'provider_cancel_failed',
+          'We could not cancel with the payment provider. Please try again in a few minutes, or email support@kash.network and we will cancel it for you.',
+        );
       }
     }
     const updated = await db.updateSubscription(sub.id, {

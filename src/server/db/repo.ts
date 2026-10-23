@@ -8,6 +8,7 @@ import type {
   CommissionRow,
   DueLeadRow,
   EmailChangeRow,
+  AiThreadRow,
   EmailMessageRow,
   FraudFlagInput,
   LeadStateRow,
@@ -95,6 +96,7 @@ export interface Repo {
     totalProfiles: number;
     adminRevenueCents: number;
     payableCents: number;
+    recentActivity: { kind: 'payment' | 'signup'; email: string | null; detail: string; at: string }[];
   }>;
   adminListUsers(
     params: AdminUserListParams,
@@ -231,4 +233,18 @@ export interface Repo {
     aiGenerated?: boolean;
   }): Promise<EmailMessageRow>;
   listEmailMessagesByProfile(profileId: string, limit?: number): Promise<EmailMessageRow[]>;
+
+  /* ------------------------------------------------------ settings */
+
+  getSetting<T = unknown>(key: string): Promise<T | null>;
+  setSetting(key: string, value: unknown): Promise<void>;
+
+  /* ------------------------------------------------------ M3: AI agent */
+
+  getAiThread(profileId: string): Promise<AiThreadRow | null>;
+  // creates the thread on first reply; bumps message_count + last_message_at each call
+  recordAiReply(profileId: string): Promise<AiThreadRow>;
+  setAiThreadActive(profileId: string, active: boolean): Promise<void>;
+  // support ticket created from an inbound email (profile may be unknown)
+  countAiRepliesSince(sinceIso: string): Promise<number>;
 }

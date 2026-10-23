@@ -80,6 +80,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ ref, linkKind, path }),
     }),
+  requestSignInLink: (email: string) =>
+    req<{ ok: true }>('/auth/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
   adminOverview: () =>
     req<{
       activePaidMembers: number;
@@ -88,6 +90,7 @@ export const api = {
       totalProfiles: number;
       adminRevenueCents: number;
       pendingPayoutsCents: number;
+      recentActivity: { kind: 'payment' | 'signup'; email: string | null; detail: string; at: string }[];
     }>('/admin/overview'),
   adminUsers: (filter = 'all', page = 1, q = '') =>
     req<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }>(

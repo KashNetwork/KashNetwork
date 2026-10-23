@@ -106,6 +106,9 @@ function authed(req: Request): boolean {
 
 export const GET = route(async (req) => {
   if (!authed(req)) throw unauthorized();
-  return ok(await tick());
+  const result = await tick();
+  // recorded so /api/health?strict=1 can tell a monitor when the job has stopped
+  await (await getDb()).setSetting('cron_last_run', { at: new Date().toISOString() });
+  return ok(result);
 });
 export const POST = GET;

@@ -13,6 +13,7 @@ export interface SendEmailInput {
   text: string;
   replyTo?: string;
   tags?: Record<string, string>;
+  headers?: Record<string, string>;
 }
 
 export type EmailInvalidReason =
@@ -20,7 +21,8 @@ export type EmailInvalidReason =
   | 'disposable'
   | 'no_mx'
   | 'undeliverable'
-  | 'role';
+  | 'role'
+  | 'placeholder';
 
 export interface EmailProvider {
   send(msg: SendEmailInput): Promise<{ providerMessageId: string }>;

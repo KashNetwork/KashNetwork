@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { FREE_NURTURE_SEQUENCE } from '@/content/email-sequence';
 import { getEmailProvider } from '@/server/adapters';
 import { getDb } from '@/server/db';
 import { badRequest, clientIp, conflict, ok, readJson, route, userAgent } from '@/server/http';
@@ -19,6 +20,7 @@ const INVALID_EMAIL_MESSAGE: Record<string, string> = {
   syntax: "That doesn't look like a valid email address.",
   disposable: 'Please use a permanent email address, not a temporary/disposable one.',
   role: 'Please use a personal email address rather than a shared inbox like admin@ or support@.',
+  placeholder: 'That looks like a placeholder address. Please enter your real email so we can reach you.',
   no_mx: "We couldn't find a mail server for that email's domain — please double-check it.",
   undeliverable: "That email address looks undeliverable — please double-check it.",
 };
@@ -85,7 +87,7 @@ export const POST = route(async (req) => {
       profileId: profile.id,
       sequence: 'free_nurture',
       emailAffiliateId: attribution.affiliateId,
-      nextSendAt: new Date().toISOString(),
+      nextSendAt: new Date(Date.now() + FREE_NURTURE_SEQUENCE[0]!.afterHours * 3_600_000).toISOString(),
     });
   } catch (e) {
     console.warn('[leads] could not start nurture sequence for', profile.id, (e as Error).message);

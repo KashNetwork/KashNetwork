@@ -106,16 +106,74 @@ function navFor(role: string, accountType: string, tabs: TabKey[]): NavGroup[] {
 export function AppShell() {
   const { me, loading, logout } = useAuth();
   const router = useRouter();
+  const { refresh } = useAuth();
   const [active, setActive] = useState<TabKey | null>(null);
+  // set by the page Explodely sends buyers to after payment (/thanks → /app?welcome=purchase)
+  const [justPurchased, setJustPurchased] = useState(false);
+  const [waitedTooLong, setWaitedTooLong] = useState(false);
 
   useEffect(() => {
     if (!loading && !me) router.replace('/login');
   }, [loading, me, router]);
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('welcome') === 'purchase') setJustPurchased(true);
+  }, []);
+
+  // payment confirmations reach us a moment after the buyer lands here: keep checking until the account is paid
+  const stillFree = justPurchased && me?.accountType === 'free';
+  useEffect(() => {
+    if (!stillFree) return;
+    const poll = setInterval(() => void refresh(), 2000);
+    const giveUp = setTimeout(() => setWaitedTooLong(true), 90_000);
+    return () => {
+      clearInterval(poll);
+      clearTimeout(giveUp);
+    };
+  }, [stillFree, refresh]);
+
+  // as soon as it is paid, open the new Buy Traffic tab and tidy the address bar
+  const paidNow = justPurchased && me?.accountType === 'paid';
+  useEffect(() => {
+    if (!paidNow) return;
+    setActive('buy_traffic');
+    setJustPurchased(false);
+    window.history.replaceState(null, '', '/app');
+  }, [paidNow]);
+
   if (loading || !me) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#eceef2]">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+      </div>
+    );
+  }
+
+  if (stillFree) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#eceef2] px-4 text-center">
+        <div className="max-w-sm">
+          {!waitedTooLong && (
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+          )}
+          <h1 className="mt-5 text-xl font-extrabold text-slate-900">
+            {waitedTooLong ? 'Still confirming your payment' : 'Payment received, unlocking your account…'}
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            {waitedTooLong
+              ? "This is taking longer than usual. Refresh in a minute, or check your email for your sign-in link."
+              : 'This only takes a few seconds. You will land on your Buy Traffic tab.'}
+          </p>
+          {waitedTooLong && (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white"
+            >
+              Refresh
+            </button>
+          )}
+        </div>
       </div>
     );
   }

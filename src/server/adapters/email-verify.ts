@@ -23,12 +23,35 @@ const DISPOSABLE = new Set([
 
 const ROLE_LOCALPARTS = new Set([
   'admin', 'administrator', 'postmaster', 'hostmaster', 'webmaster', 'abuse',
-  'noreply', 'no-reply', 'donotreply',
+  'noreply', 'no-reply', 'donotreply', 'support', 'info', 'contact', 'sales',
+  'help', 'billing', 'office', 'team', 'service', 'enquiries', 'inquiries',
+  'marketing', 'hello', 'mail', 'root',
 ]);
+
+// Placeholder / "typed something to get past the form" addresses. A real
+// mailbox can't be confirmed without Kickbox, but these are never real people:
+// test@mail.com, demo@gmail.com, asdf@..., 12345@..., aaaa@..., etc. The
+// optional trailing digits catch test1@, demo2@, fake_3@.
+const PLACEHOLDER_LOCAL =
+  /^(test|tester|testing|tests|demo|fake|fakeemail|sample|example|asdf|asdfg|asdfgh|qwer|qwert|qwerty|zxcv|zxcvb|abc|abcd|abcde|xyz|user|username|email|myemail|name|foo|bar|foobar|baz|temp|temporary|random|none|null|nobody|anon|anonymous|dummy|noemail|nomail|nothing|someone|somebody|mymail|a|aa|aaa|x|xx|xxx)[._+-]?\d*$/;
+const PLACEHOLDER_DOMAINS = new Set([
+  'example.com', 'example.org', 'example.net', 'test.com', 'test.net', 'test.org',
+  'domain.com', 'email.com', 'yourdomain.com', 'yourcompany.com', 'sample.com',
+  'fake.com', 'fakeemail.com', 'noemail.com', 'none.com', 'localhost', 'invalid.com',
+]);
+
+function looksLikePlaceholder(localPart: string, domain: string): boolean {
+  if (PLACEHOLDER_DOMAINS.has(domain) || /^example\./.test(domain)) return true;
+  const bare = localPart.split('+')[0]!;
+  if (PLACEHOLDER_LOCAL.test(bare)) return true;
+  if (/^(.)\1{3,}$/.test(bare)) return true; // aaaa, 1111
+  if (/^\d+$/.test(bare)) return true; // 123456
+  return false;
+}
 
 export type EmailVerdict =
   | { valid: true }
-  | { valid: false; reason: 'syntax' | 'disposable' | 'role' | 'no_mx' | 'undeliverable' };
+  | { valid: false; reason: 'syntax' | 'disposable' | 'role' | 'placeholder' | 'no_mx' | 'undeliverable' };
 
 const domainCache = new Map<string, boolean>();
 
@@ -74,7 +97,8 @@ export async function verifyEmailByDns(email: string): Promise<EmailVerdict> {
   const localPart = trimmed.slice(0, trimmed.indexOf('@'));
 
   if (DISPOSABLE.has(domain)) return { valid: false, reason: 'disposable' };
-  if (ROLE_LOCALPARTS.has(localPart)) return { valid: false, reason: 'role' };
+  if (ROLE_LOCALPARTS.has(localPart.split('+')[0]!)) return { valid: false, reason: 'role' };
+  if (looksLikePlaceholder(localPart, domain)) return { valid: false, reason: 'placeholder' };
   if (!(await domainCanReceiveMail(domain))) return { valid: false, reason: 'no_mx' };
 
   return { valid: true };

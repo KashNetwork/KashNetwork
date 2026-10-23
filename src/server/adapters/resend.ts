@@ -27,6 +27,7 @@ export class ResendEmailProvider implements EmailProvider {
       html: msg.html,
       text: msg.text,
       replyTo: msg.replyTo,
+      headers: msg.headers,
       tags: msg.tags
         ? Object.entries(msg.tags).map(([name, value]) => ({ name, value: String(value) }))
         : undefined,

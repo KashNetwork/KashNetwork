@@ -53,7 +53,7 @@ export const MONEY = {
 export const DEFAULTS = {
   commissionHoldDays: 30,
   attributionWindowDays: 30,
-  payoutMinCents: 5000,
+  payoutMinCents: 3000,
 } as const;
 
 // funnel paths

@@ -10,6 +10,8 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { EXPLODELY_BILLING_SUPPORT, EXPLODELY_DISCLAIMER } from "@/content/legal-extra";
+import { ExplodelyEmbed } from "@/components/ExplodelyEmbed";
 // Real testimonial headshots live in /public/sales/ (see public/sales/README.md).
 const avatarJehoyakim = { url: "/sales/testimonial-jehoyakim.jpg" };
 const avatarGalib = { url: "/sales/testimonial-galib.jpg" };
@@ -57,6 +59,7 @@ export function CheckoutGrid({
   showPanel = true,
   wide = false,
   showTrialSummary = false,
+  embedCheckout = false,
 }: {
   ctaLabel?: string;
   ctaNote?: string;
@@ -65,6 +68,8 @@ export function CheckoutGrid({
   showPanel?: boolean;
   wide?: boolean;
   showTrialSummary?: boolean;
+  /** Replace our own form fields with Explodely's embedded checkout form. */
+  embedCheckout?: boolean;
 }) {
   const agreement = (
     <label className="flex items-center gap-2 text-[11.5px] font-semibold sm:gap-3 sm:text-[14px]" style={{ color: "#04184E" }}>
@@ -130,7 +135,27 @@ export function CheckoutGrid({
             {title}
           </h2>
 
-          <div className="mt-7 space-y-4">
+          {embedCheckout ? (
+            <div className="mt-6 flex flex-1 flex-col gap-4">
+              <ExplodelyEmbed />
+              <p className="text-center text-[12.5px] font-semibold" style={{ color: navySub }}>
+                By completing your purchase you agree to the{" "}
+                <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline">
+                  Terms of Service
+                </a>{" "}
+                &amp;{" "}
+                <a href="/explodely-refund-policy" target="_blank" rel="noopener noreferrer" className="underline">
+                  Refund Policy
+                </a>
+                .
+              </p>
+              <div className="flex items-center justify-center gap-2 text-[13px] font-bold" style={{ color: "#04184E" }}>
+                <Lock className="h-4 w-4" style={{ color: "#2684FF" }} />
+                256-Bit SSL Encryption
+              </div>
+            </div>
+          ) : (
+          <div className="mt-7 flex flex-1 flex-col justify-between gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 label="First Name"
@@ -160,30 +185,6 @@ export function CheckoutGrid({
               placeholder="Street address"
               icon={<MapPin className="h-4 w-4" style={{ color: "#3FDD1B" }} />}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div
-                className="flex items-center gap-2 rounded-xl border px-4 py-3 text-[14px] font-bold"
-                style={{
-                  borderColor: "#3FDD1B",
-                  color: "#04184E",
-                  background: "#F1FEF2",
-                  boxShadow: "0 0 0 1px #3FDD1B",
-                }}
-              >
-                <CreditCard className="h-4 w-4" style={{ color: "#2684FF" }} />
-                Credit Card
-              </div>
-              <div
-                className="flex items-center gap-2 rounded-xl border px-4 py-3 text-[14px] font-bold"
-                style={{ borderColor: "#D9E4F3", color: "#04184E", background: "#F7FBFF" }}
-              >
-                <span className="font-display text-[16px] font-extrabold italic" style={{ color: "#1E5BFF" }}>
-                  P
-                </span>
-                PayPal
-              </div>
-            </div>
-
             <Field
               label="Credit Card Number"
               placeholder="1234 1234 1234 1234"
@@ -278,6 +279,7 @@ export function CheckoutGrid({
               256-Bit SSL Encryption
             </div>
           </div>
+          )}
         </div>
 
         {/* benefits + order summary */}
@@ -490,21 +492,70 @@ export function CheckoutFooter({ variant = "tinted" }: { variant?: "tinted" | "p
                 items={[
                   { label: "Terms of Service", href: "/terms-of-service" },
                   { label: "Privacy Policy", href: "/privacy-policy" },
-                  { label: "Refund Policy", href: "/refund-policy" },
+                  { label: "Refund Policy", href: "/explodely-refund-policy" },
                   { label: "Cookie Policy", href: "/cookie-policy" },
+                  { label: "FTC Compliance", href: "/ftc-compliance" },
                 ]}
               />
             </div>
             <FooterCol
               title={"\u00A0"}
               items={[
-                { label: "Income Disclaimer", href: "/income-disclaimer" },
+                { label: "Earnings Disclaimer", href: "/income-disclaimer" },
+                { label: "Disclaimer", href: "/disclaimer" },
                 { label: "Affiliate Agreement", href: "/affiliate-agreement" },
                 { label: "Frequently Asked Questions (FAQ's)", href: "/faqs" },
+                { label: "Billing Support", href: EXPLODELY_BILLING_SUPPORT },
+                { label: "Contact", href: "/contact" },
               ]}
             />
           </div>
         )}
+
+        {plain ? (
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pt-10 text-[13px] font-semibold"
+            style={{ color: navySub }}
+          >
+            {[
+              { label: "Terms of Service", href: "/terms-of-service" },
+              { label: "Privacy Policy", href: "/privacy-policy" },
+              { label: "Refund Policy", href: "/explodely-refund-policy" },
+              { label: "Earnings Disclaimer", href: "/income-disclaimer" },
+              { label: "FTC Compliance", href: "/ftc-compliance" },
+              { label: "Disclaimer", href: "/disclaimer" },
+              { label: "Billing Support", href: EXPLODELY_BILLING_SUPPORT },
+              { label: "Contact", href: "/contact" },
+              { label: "support@kash.network", href: "mailto:support@kash.network" },
+            ].map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-70"
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+
+        <p
+          className={plain ? "px-2 pt-6 text-center text-[11px] leading-relaxed" : "pb-4 text-center text-[11px] leading-relaxed sm:text-left"}
+          style={{ color: subSoft }}
+        >
+          {EXPLODELY_DISCLAIMER}{" "}
+          <a
+            href={EXPLODELY_BILLING_SUPPORT}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Billing Support
+          </a>
+        </p>
 
         <p
           className={plain ? "px-2 pb-8 pt-10 text-center text-[11px] leading-relaxed sm:text-left" : "pb-6 text-center text-[11px] leading-relaxed sm:text-left"}

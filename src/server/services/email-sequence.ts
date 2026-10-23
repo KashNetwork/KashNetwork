@@ -1,35 +1,24 @@
-import { FREE_NURTURE_SEQUENCE } from '@/content/email-sequence';
+import { FREE_NURTURE_SEQUENCE, nextSendableIndex } from '@/content/email-sequence';
 import { getEmailProvider } from '../adapters';
 import { config } from '../config';
 import type { Repo } from '../db/repo';
-import { affiliateLinks } from './account';
+import { leadAppLink } from './magic-link';
+import { renderSequenceEmail } from './email-render';
+import { unsubscribeUrl } from './unsubscribe';
 
-function renderBody(text: string, link: string): string {
-  return text.replaceAll('{{affiliate_link}}', link);
-}
-
-function toHtml(text: string): string {
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  const linked = escaped.replace(/(https?:\/\/\S+)/g, '<a href="$1">$1</a>');
-  const paragraphs = linked
-    .split(/\n\n+/)
-    .map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-    .join('\n');
-  return `<div style="font-family:sans-serif;font-size:15px;line-height:1.6;color:#0f172a;">${paragraphs}</div>`;
-}
-
-const DAY_MS = 86_400_000;
+const HOUR_MS = 3_600_000;
+/** Minimum time between two emails to the same lead, however late the job runs. */
+const MIN_GAP_HOURS = 20;
 
 /**
  * One tick of the free-lead nurture sequence — called from the cron alongside
  * the M2 payment maintenance. For every lead due (sequence_status='active'
- * and next_send_at <= now): sends that step's email with {{affiliate_link}}
- * resolved to whichever affiliate is credited for this lead (or admin's own
- * link if none), logs it to email_messages, and advances to the next step.
- * A send failure leaves next_send_at untouched so the next tick retries it.
+ * and next_send_at <= now): sends that step's email with each {{link:...}}
+ * resolved to the sales-page link of whichever affiliate is credited for this
+ * lead (or the admin's own link if none), logs it to email_messages, and
+ * advances to the next step. A send failure leaves next_send_at untouched so
+ * the next tick retries it. Emails marked `hold` in the content file are
+ * skipped, never sent.
  *
  * Gated on config.resend.enabled (a real, non-fake send). Without that gate,
  * production leads would accumulate "sent" state via the fake provider
@@ -57,7 +46,9 @@ export async function runNurtureSequenceTick(repo: Repo, limit = 50, force = fal
   let failed = 0;
 
   for (const lead of due) {
-    const step = FREE_NURTURE_SEQUENCE[lead.sequence_step];
+    // held emails (copy that isn't true yet) are skipped, never sent
+    const stepIndex = nextSendableIndex(lead.sequence_step);
+    const step = stepIndex >= 0 ? FREE_NURTURE_SEQUENCE[stepIndex] : undefined;
     if (!step) {
       await repo.updateLeadState(lead.profile_id, { sequence_status: 'completed', next_send_at: null });
       completed++;
@@ -69,42 +60,52 @@ export async function runNurtureSequenceTick(repo: Repo, limit = 50, force = fal
       const aff = await repo.getProfileById(lead.email_affiliate_id);
       if (aff?.affiliate_code) code = aff.affiliate_code;
     }
-    const link = affiliateLinks(code).sales;
-    const bodyText = renderBody(step.text, link);
-    const bodyHtml = toHtml(bodyText);
+    // opens the lead's free account, with this affiliate's Sales page in "Harley's Story"
+    const link = leadAppLink(lead.profile_id, code);
+    const unsub = unsubscribeUrl(lead.profile_id);
+    const rendered = renderSequenceEmail(step, link, unsub);
     const from = config.resend.fromHarley;
 
     try {
       const result = await getEmailProvider().send({
         from,
         to: lead.email,
-        subject: step.subject,
-        html: bodyHtml,
-        text: bodyText,
-        tags: { sequence: lead.sequence, step: String(lead.sequence_step) },
+        subject: rendered.subject,
+        html: rendered.html,
+        text: rendered.text,
+        replyTo: config.resend.replyHarley,
+        headers: {
+          'List-Unsubscribe': `<${unsub}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+        tags: { sequence: lead.sequence, step: String(stepIndex) },
       });
       await repo.createEmailMessage({
         profileId: lead.profile_id,
         direction: 'outbound',
         fromAddr: from,
         toAddr: lead.email,
-        subject: step.subject,
-        bodyText,
-        bodyHtml,
-        sequenceStep: lead.sequence_step,
+        subject: rendered.subject,
+        bodyText: rendered.text,
+        bodyHtml: rendered.html,
+        sequenceStep: stepIndex,
         providerMessageId: result.providerMessageId,
       });
 
-      const nextIndex = lead.sequence_step + 1;
-      const nextStep = FREE_NURTURE_SEQUENCE[nextIndex];
+      const nextIndex = nextSendableIndex(stepIndex + 1);
+      const nextStep = nextIndex >= 0 ? FREE_NURTURE_SEQUENCE[nextIndex] : undefined;
       if (nextStep) {
+        // on schedule normally; after an outage, still leave a gap so nobody gets a burst of emails
         const nextSendAt = new Date(
-          new Date(lead.entered_at).getTime() + nextStep.day * DAY_MS,
+          Math.max(
+            new Date(lead.entered_at).getTime() + nextStep.afterHours * HOUR_MS,
+            Date.now() + MIN_GAP_HOURS * HOUR_MS,
+          ),
         ).toISOString();
         await repo.updateLeadState(lead.profile_id, { sequence_step: nextIndex, next_send_at: nextSendAt });
       } else {
         await repo.updateLeadState(lead.profile_id, {
-          sequence_step: nextIndex,
+          sequence_step: FREE_NURTURE_SEQUENCE.length,
           sequence_status: 'completed',
           next_send_at: null,
         });

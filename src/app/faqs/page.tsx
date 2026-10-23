@@ -49,7 +49,7 @@ const FAQS: { q: string; a: string[] }[] = [
   {
     q: 'Can I get a refund?',
     a: [
-      'Your $1 trial payment provides immediate access to our platform and is non-refundable. If you choose to continue after the 7-day trial period, your subscription will renew automatically at the regular subscription price. All subscription payments are non-refundable once processed. You may cancel your subscription at any time before the end of your 7-day trial to avoid being charged the full subscription price.',
+      'Your $1 trial payment covers 7 days of access and is non-refundable. To avoid being charged the full subscription price, cancel before the 7-day trial ends. If you are charged the full subscription price, you can request a refund within 30 days of the date of that charge. You may cancel your subscription at any time before the end of your 7-day trial to avoid being charged the full subscription price.',
     ],
   },
   {

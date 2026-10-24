@@ -402,15 +402,14 @@ function BuyTrafficPanel() {
           </div>
         </div>
 
-        {/* placeholder video until the final Buy Traffic video is supplied */}
         <div className="mt-5 aspect-video w-full overflow-hidden rounded-2xl bg-slate-900 ring-1 ring-slate-200">
-          <iframe
-            src="https://www.youtube.com/embed/uhzTqBnIbjc"
+          <video
+            src="/sales/buy-traffic.mp4"
             title="Buy Traffic walkthrough"
             className="h-full w-full"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            loading="lazy"
+            controls
+            playsInline
+            preload="metadata"
           />
         </div>
 

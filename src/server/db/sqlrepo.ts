@@ -18,6 +18,7 @@ import type {
   NewProfile,
   NotificationRow,
   LiveEventRow,
+  FraudFlagRow,
   PaymentEventRow,
   PayoutRow,
   ProfileRow,
@@ -707,6 +708,36 @@ export class SqlRepo implements Repo {
     return this.db.query<CommissionRow>(
       'select * from commissions where affiliate_id = $1 order by created_at desc limit $2',
       [affiliateId, limit],
+    );
+  }
+
+  async findDuplicateProfile(normalizedEmail: string, excludeId: string) {
+    const r = await this.db.query<{ id: string }>(
+      `select id from profiles
+        where id <> $2::uuid
+          and (case when split_part(lower(email::text),'@',2) in ('gmail.com','googlemail.com')
+                    then replace(split_part(split_part(lower(email::text),'@',1),'+',1),'.','') || '@gmail.com'
+                    else split_part(split_part(lower(email::text),'@',1),'+',1) || '@' || split_part(lower(email::text),'@',2) end) = $1
+        limit 1`,
+      [normalizedEmail, excludeId],
+    );
+    return r[0] ?? null;
+  }
+
+  async listFraudFlags(resolved: boolean, limit: number) {
+    return this.db.query<FraudFlagRow>(
+      `select f.id, p.email::text as profile_email, f.type::text as type, f.severity, f.details,
+              f.auto_action, f.resolved, f.created_at::text as created_at
+         from fraud_flags f left join profiles p on p.id = f.profile_id
+        where f.resolved = $1 order by f.created_at desc limit $2`,
+      [resolved, limit],
+    );
+  }
+
+  async resolveFraudFlag(id: string, adminId: string) {
+    await this.db.query(
+      'update fraud_flags set resolved = true, resolved_at = now(), resolved_by = $2::uuid where id = $1::uuid',
+      [id, adminId],
     );
   }
 

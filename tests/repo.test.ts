@@ -329,4 +329,17 @@ describe('SqlRepo settings via PGlite', () => {
     expect(Array.isArray(rows)).toBe(true);
     for (const r of rows) expect(['joined', 'earned']).toContain(r.kind);
   });
+
+  it('finds a duplicate account behind dots / +tags and lists + resolves its flag', async () => {
+    const a = await repo.createProfile({ email: 'dup.person@gmail.com', account_type: 'free', free_variant: 'lead', email_verified_at: new Date().toISOString() });
+    const b = await repo.createProfile({ email: 'dupperson+x@gmail.com', account_type: 'free', free_variant: 'lead', email_verified_at: new Date().toISOString() });
+    expect((await repo.findDuplicateProfile('dupperson@gmail.com', b.id))?.id).toBe(a.id);
+    expect(await repo.findDuplicateProfile('nobody@gmail.com', b.id)).toBeNull();
+    await repo.createFraudFlag({ profileId: b.id, type: 'dup_account', severity: 'low' });
+    const open = await repo.listFraudFlags(false, 10);
+    const flag = open.find((f) => f.profile_email === b.email)!;
+    expect(flag.type).toBe('dup_account');
+    await repo.resolveFraudFlag(flag.id, a.id);
+    expect((await repo.listFraudFlags(false, 10)).some((f) => f.id === flag.id)).toBe(false);
+  });
 });

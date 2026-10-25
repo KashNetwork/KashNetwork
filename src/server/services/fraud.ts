@@ -30,6 +30,19 @@ export function normalizeEmail(email: string): string {
   return `${(local ?? '').split('+')[0]}@${domain}`;
 }
 
+/** Flag (never block) a new account that matches an existing one apart from dots / +tags. */
+export async function flagIfDuplicate(repo: Repo, profile: ProfileRow): Promise<void> {
+  const dup = await repo.findDuplicateProfile(normalizeEmail(profile.email), profile.id);
+  if (!dup) return;
+  await repo.createFraudFlag({
+    profileId: profile.id,
+    type: 'dup_account',
+    severity: 'low',
+    details: { matchesProfileId: dup.id },
+    autoAction: 'flagged_for_review',
+  });
+}
+
 export async function flagChargeback(
   repo: Repo,
   profile: ProfileRow,

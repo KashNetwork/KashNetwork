@@ -15,6 +15,7 @@ import type {
   NewProfile,
   NotificationRow,
   LiveEventRow,
+  FraudFlagRow,
   PaymentEventRow,
   PayoutRow,
   ProfileRow,
@@ -172,6 +173,10 @@ export interface Repo {
 
   // fraud
   createFraudFlag(input: FraudFlagInput): Promise<void>;
+  /** Another account whose email is the same once dots / +tags are ignored. */
+  findDuplicateProfile(normalizedEmail: string, excludeId: string): Promise<{ id: string } | null>;
+  listFraudFlags(resolved: boolean, limit: number): Promise<FraudFlagRow[]>;
+  resolveFraudFlag(id: string, adminId: string): Promise<void>;
 
   // attribution
   lastAttributableClick(input: {

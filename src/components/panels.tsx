@@ -27,6 +27,7 @@ import {
   type AdminPayoutRow,
   type AdminSupportTicketRow,
   type AdminUserRow,
+  type AdminFraudRow,
   type AffiliateStats,
   type PayoutRow,
   type SubscriptionSummary,
@@ -798,6 +799,7 @@ function AdminCustomers() {
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
   const [total, setTotal] = useState(0);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -810,10 +812,37 @@ function AdminCustomers() {
         .catch(() => undefined);
     }, 200);
     return () => clearTimeout(id);
-  }, [filter, q]);
+  }, [filter, q, tick]);
+
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function setStatus(r: AdminUserRow) {
+    const to = r.account_type === 'paid' ? 'free' : 'paid';
+    if (!window.confirm(`Change ${r.email} to ${to.toUpperCase()}? This is a manual override and is logged.`)) return;
+    try {
+      await api.adminSetStatus(r.id, to);
+      setMsg(`${r.email} is now ${to}.`);
+      setTick((n) => n + 1);
+    } catch (err) {
+      setMsg(err instanceof ApiError ? err.message : 'Could not change status.');
+    }
+  }
+
+  async function reassign(r: AdminUserRow) {
+    const code = window.prompt(`Move ${r.email} under which affiliate? Enter their affiliate code.`);
+    if (!code || !code.trim()) return;
+    try {
+      const res = await api.adminReassign(r.id, code.trim());
+      setMsg(`${r.email} now belongs to ${res.affiliateEmail}. Commissions already earned stay where they are; future ones follow.`);
+      setTick((n) => n + 1);
+    } catch (err) {
+      setMsg(err instanceof ApiError ? err.message : 'Could not move the member.');
+    }
+  }
 
   return (
     <div className="space-y-4">
+      {msg && <Notice tone="success">{msg}</Notice>}
       <div className="flex flex-wrap items-center gap-2">
         {FILTERS.map((f) => (
           <button
@@ -829,6 +858,12 @@ function AdminCustomers() {
             {f.label}
           </button>
         ))}
+        <a
+          href="/api/admin/export?type=users"
+          className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 no-underline ring-1 ring-slate-200 hover:bg-slate-50"
+        >
+          Export CSV
+        </a>
         <div className="ml-auto w-full sm:w-64">
           <Input placeholder="Search by email…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
@@ -844,6 +879,7 @@ function AdminCustomers() {
                 <th className="px-5 py-3 font-semibold">Affiliate code</th>
                 <th className="px-5 py-3 font-semibold">Referrals</th>
                 <th className="px-5 py-3 font-semibold">Joined</th>
+                <th className="px-5 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -862,11 +898,25 @@ function AdminCustomers() {
                   <td className="px-5 py-3 text-slate-500">
                     {new Date(r.created_at).toLocaleDateString()}
                   </td>
+                  <td className="px-5 py-3">
+                    {r.role === 'admin' ? (
+                      <span className="text-xs text-slate-300">-</span>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Btn variant="outline" className="!px-3 !py-1.5 !text-xs" onClick={() => setStatus(r)}>
+                          {r.account_type === 'paid' ? 'Make free' : 'Make paid'}
+                        </Btn>
+                        <Btn variant="outline" className="!px-3 !py-1.5 !text-xs" onClick={() => reassign(r)}>
+                          Move referrer
+                        </Btn>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-14 text-center text-sm text-slate-400">
+                  <td colSpan={6} className="px-5 py-14 text-center text-sm text-slate-400">
                     No matching users
                   </td>
                 </tr>
@@ -875,7 +925,7 @@ function AdminCustomers() {
           </table>
         </div>
         <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">
-          {total} total · status override & referral reassignment — {SOON_M4}
+          {total} total · every change is saved in the audit log
         </div>
       </Panel>
     </div>
@@ -954,6 +1004,12 @@ function AdminPayouts() {
             {f.label}
           </button>
         ))}
+        <a
+          href="/api/admin/export?type=payouts"
+          className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 no-underline ring-1 ring-slate-200 hover:bg-slate-50"
+        >
+          Export CSV
+        </a>
       </div>
 
       {notice && <Notice tone={notice.includes('rejected') || notice.includes('paid') ? 'success' : 'warn'}>{notice}</Notice>}
@@ -1040,6 +1096,54 @@ function AdminPayouts() {
   );
 }
 
+function FraudFlags() {
+  const [rows, setRows] = useState<AdminFraudRow[]>([]);
+  const load = () => {
+    api.adminFraud(false).then((r) => setRows(r.rows)).catch(() => undefined);
+  };
+  useEffect(load, []);
+  return (
+    <Panel title="Safeguard flags (needs review)" bodyClassName="p-0">
+      {rows.length === 0 ? (
+        <EmptyState icon={ShieldCheck} title="Nothing to review" hint="Self-referrals, duplicate accounts and chargebacks show up here." />
+      ) : (
+        <ul className="divide-y divide-slate-50">
+          {rows.map((f) => (
+            <li key={f.id} className="flex items-start gap-3 px-5 py-3 text-sm">
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-slate-800">
+                  {FLAG_LABEL[f.type] ?? f.type} · {f.profile_email ?? 'unknown account'}
+                </div>
+                <div className="text-xs text-slate-400">
+                  {f.severity} · {shortDate(f.created_at)}
+                  {f.auto_action ? ` · ${f.auto_action.replace(/_/g, ' ')}` : ''}
+                </div>
+              </div>
+              <Btn
+                variant="outline"
+                className="!px-3 !py-1.5 !text-xs"
+                onClick={() => api.adminResolveFraud(f.id).then(load).catch(() => undefined)}
+              >
+                Mark reviewed
+              </Btn>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+}
+
+const FLAG_LABEL: Record<string, string> = {
+  self_referral: 'Self-referral',
+  dup_account: 'Possible duplicate account',
+  velocity: 'Unusual sign-up speed',
+  disposable_email: 'Disposable email',
+  ip_match: 'Same network as another account',
+  payment_fingerprint: 'Chargeback / payment risk',
+  attribution_conflict: 'Attribution conflict',
+};
+
 function AdminSettings() {
   const { me } = useAuth();
   return (
@@ -1062,23 +1166,19 @@ function AdminSettings() {
         </div>
       </Panel>
 
-      <Panel title="System settings" bodyClassName="p-0">
-        <EmptyState
-          icon={UserCog}
-          title="Configuration panel coming"
-          hint="Payout minimums & reserves, commission hold window, fraud thresholds, notification content."
-          soon={SOON_M4}
-        />
+      <Panel title="Business rules in force" bodyClassName="p-5">
+        <ul className="space-y-2 text-sm text-slate-600">
+          <li>Commission: $30 flat on every recurring payment, $0 on the $1 trial.</li>
+          <li>Commissions are held 30 days before they become available.</li>
+          <li>Cashout minimum: {money(PAYOUT_MIN_CENTS)}. Paid by hand (PayPal / bank), then marked paid in Payouts.</li>
+          <li>Refunds and chargebacks reverse the related commission automatically.</li>
+          <li>Cashouts freeze while the affiliate's own membership is past due.</li>
+          <li>Self-referrals earn nothing (credit goes to the admin) and are flagged below.</li>
+          <li>Duplicate accounts (same email apart from dots or +tags) are flagged below for review.</li>
+        </ul>
       </Panel>
 
-      <Panel title="Safeguards" bodyClassName="p-0">
-        <EmptyState
-          icon={ShieldCheck}
-          title="Fraud & business rules"
-          hint="Duplicate accounts, self-referrals, chargeback / refund reversals, attribution conflicts, payout timing."
-          soon={SOON_M4}
-        />
-      </Panel>
+      <FraudFlags />
     </div>
   );
 }

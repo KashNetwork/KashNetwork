@@ -1,3 +1,4 @@
+import { normalizeEmail } from '../services/fraud';
 import { randomUUID } from 'node:crypto';
 import type { ClickLinkKind, CommissionKind, EmailDirection, PayoutMethod, PayoutStatus } from '@/shared';
 import type { Repo } from './repo';
@@ -17,6 +18,7 @@ import type {
   NewProfile,
   NotificationRow,
   LiveEventRow,
+  FraudFlagRow,
   PaymentEventRow,
   PayoutRow,
   ProfileRow,
@@ -548,6 +550,35 @@ export class InMemoryRepo implements Repo {
       .filter((c) => c.affiliate_id === affiliateId)
       .sort((a, b) => b.created_at.localeCompare(a.created_at))
       .slice(0, limit);
+  }
+
+  async findDuplicateProfile(normalizedEmail: string, excludeId: string) {
+    const hit = [...this.profiles.values()].find(
+      (p) => p.id !== excludeId && normalizeEmail(p.email) === normalizedEmail,
+    );
+    return hit ? { id: hit.id } : null;
+  }
+
+  async listFraudFlags(resolved: boolean, limit: number) {
+    return this.fraudFlags
+      .filter((f) => Boolean(f.resolved) === resolved)
+      .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+      .slice(0, limit)
+      .map((f) => ({
+        id: String(f.id),
+        profile_email: this.profiles.get(String(f.profileId))?.email ?? null,
+        type: f.type as FraudFlagRow['type'],
+        severity: String(f.severity ?? 'medium'),
+        details: f.details ?? null,
+        auto_action: (f.autoAction as string | null) ?? null,
+        resolved: Boolean(f.resolved),
+        created_at: String(f.created_at),
+      }));
+  }
+
+  async resolveFraudFlag(id: string, _adminId: string) {
+    const f = this.fraudFlags.find((x) => x.id === id);
+    if (f) f.resolved = true;
   }
 
   async createFraudFlag(input: FraudFlagInput) {

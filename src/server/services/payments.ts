@@ -4,7 +4,7 @@ import { activateAffiliate, deactivateAffiliate } from './affiliate';
 import { sendWelcomeEmail } from './welcome-email';
 import { resolveAttribution } from './attribution';
 import { markLeadConverted } from './email-sequence';
-import { flagChargeback, flagSelfReferral } from './fraud';
+import { flagChargeback, flagIfDuplicate, flagSelfReferral } from './fraud';
 
 const DAY = 86_400_000;
 const addDays = (iso: string, days: number) =>
@@ -14,12 +14,14 @@ async function ensureProfile(repo: Repo, email: string): Promise<ProfileRow> {
   const existing = await repo.getProfileByEmail(email);
   if (existing) return existing;
   // paid without going through the gate — create a bare account
-  return repo.createProfile({
+  const created = await repo.createProfile({
     email,
     account_type: 'free',
     free_variant: 'lead',
     email_verified_at: new Date().toISOString(),
   });
+  await flagIfDuplicate(repo, created);
+  return created;
 }
 
 /**

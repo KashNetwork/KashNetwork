@@ -6,6 +6,7 @@ import { badRequest, clientIp, conflict, ok, readJson, route, userAgent } from '
 import { getCookie, issueSession, REF_COOKIE } from '@/server/auth/session';
 import { presentMe } from '@/server/services/account';
 import { resolveAttribution } from '@/server/services/attribution';
+import { flagIfDuplicate } from '@/server/services/fraud';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -74,6 +75,7 @@ export const POST = route(async (req) => {
     signup_ip: clientIp(req),
     signup_user_agent: userAgent(req),
   });
+  await flagIfDuplicate(db, profile);
 
   // Kick off the 30-day nurture sequence. Whoever gets credit for this lead
   // (their ref code, or admin if none) is whose link goes in these emails —

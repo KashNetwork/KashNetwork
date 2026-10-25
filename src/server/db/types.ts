@@ -93,6 +93,17 @@ export interface LiveEventRow {
   at: string;
 }
 
+export interface FraudFlagRow {
+  id: string;
+  profile_email: string | null;
+  type: FraudFlagInput['type'];
+  severity: string;
+  details: unknown;
+  auto_action: string | null;
+  resolved: boolean;
+  created_at: string;
+}
+
 export interface NotificationRow {
   id: string;
   location: 'landing' | 'sales' | 'both';

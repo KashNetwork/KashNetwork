@@ -96,6 +96,15 @@ export const api = {
     req<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }>(
       `/admin/users?filter=${filter}&page=${page}&q=${encodeURIComponent(q)}`,
     ),
+  adminSetStatus: (id: string, accountType: 'free' | 'paid') =>
+    req<{ user: unknown }>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ accountType }) }),
+  adminReassign: (id: string, affiliateCode: string) =>
+    req<{ reassigned: boolean; affiliateEmail: string }>(`/admin/users/${id}/referrer`, {
+      method: 'POST',
+      body: JSON.stringify({ affiliateCode }),
+    }),
+  adminFraud: (resolved = false) => req<{ rows: AdminFraudRow[] }>(`/admin/fraud?resolved=${resolved ? 1 : 0}`),
+  adminResolveFraud: (id: string) => req<{ resolved: boolean }>(`/admin/fraud/${id}`, { method: 'POST' }),
   adminSupportTickets: (page = 1) =>
     req<{ rows: AdminSupportTicketRow[]; total: number; page: number; pageSize: number }>(
       `/admin/support?page=${page}`,
@@ -180,6 +189,17 @@ export interface SubscriptionSummary {
 
 export const money = (cents: number) =>
   `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export interface AdminFraudRow {
+  id: string;
+  profile_email: string | null;
+  type: string;
+  severity: string;
+  details: unknown;
+  auto_action: string | null;
+  resolved: boolean;
+  created_at: string;
+}
 
 export interface AdminUserRow {
   id: string;

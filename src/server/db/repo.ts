@@ -14,6 +14,7 @@ import type {
   LeadStateRow,
   NewProfile,
   NotificationRow,
+  LiveEventRow,
   PaymentEventRow,
   PayoutRow,
   ProfileRow,
@@ -77,6 +78,7 @@ export interface Repo {
   }): Promise<{ rows: SupportTicketRow[]; total: number }>;
 
   // --- notifications ---
+  listLiveEvents(limit: number): Promise<LiveEventRow[]>;
   listNotifications(location: 'landing' | 'sales'): Promise<NotificationRow[]>;
 
   createAudit(input: {

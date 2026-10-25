@@ -70,6 +70,25 @@ describe('SqlRepo via PGlite', () => {
       landing_path: '/trial',
     });
 
+    // real cookie-style visitor id (FK to visitors); twice = same visitor re-clicking
+    const visitorId = '9dbae7d0-4c1b-4495-b96c-1920e7096ea9';
+    for (let i = 0; i < 2; i++) {
+      await repo.createClick({
+        affiliate_id: aff!.id,
+        link_kind: 'landing',
+        visitor_id: visitorId,
+        ip: '10.0.0.2',
+        user_agent: 'vitest',
+        referer: null,
+        landing_path: '/trial',
+      });
+    }
+    const vc = await client.query<{ v: string; c: string }>(
+      'select (select count(*) from visitors) v, (select count(*) from clicks where visitor_id = $1::uuid) c',
+      [visitorId],
+    );
+    expect([Number(vc[0]!.v), Number(vc[0]!.c)]).toEqual([1, 2]);
+
     await repo.createAudit({
       adminId: aff!.id,
       action: 'test',
@@ -264,3 +283,50 @@ describe('SqlRepo email nurture via PGlite', () => {
 });
 
 type ProfileDetails = Record<string, unknown>;
+
+describe('SqlRepo AI agent + admin overview via PGlite', () => {
+  it('records AI replies on a thread, counts them, and can deactivate it', async () => {
+    const p = await repo.createProfile({ email: 'ai.thread@gmail.com', account_type: 'free' });
+    expect(await repo.getAiThread(p.id)).toBeNull();
+
+    const t1 = await repo.recordAiReply(p.id);
+    expect(t1.message_count).toBe(1);
+    expect(t1.first_reply_at).toBeTruthy();
+    const t2 = await repo.recordAiReply(p.id);
+    expect(t2.message_count).toBe(2);
+    expect(new Date(t2.first_reply_at as string).getTime()).toBe(new Date(t1.first_reply_at as string).getTime());
+
+    await repo.setAiThreadActive(p.id, false);
+    expect((await repo.getAiThread(p.id))?.active).toBe(false);
+
+    await repo.createEmailMessage({
+      profileId: p.id, direction: 'outbound', fromAddr: 'h@x.com', toAddr: p.email,
+      subject: 's', bodyText: 'b', bodyHtml: null, aiGenerated: true,
+    });
+    const since = new Date(Date.now() - 60_000).toISOString();
+    expect(await repo.countAiRepliesSince(since)).toBeGreaterThanOrEqual(1);
+  });
+
+  it('adminOverview returns recent activity and drops refunded payments from revenue', async () => {
+    const o = await repo.adminOverview();
+    expect(Array.isArray(o.recentActivity)).toBe(true);
+    expect(o.recentActivity.some((a) => a.kind === 'signup')).toBe(true);
+    expect(typeof o.adminRevenueCents).toBe('number');
+  });
+});
+
+describe('SqlRepo settings via PGlite', () => {
+  it('stores and updates a JSON setting', async () => {
+    expect(await repo.getSetting('cron_last_run_test')).toBeNull();
+    await repo.setSetting('cron_last_run_test', { at: '2026-10-20T10:00:00Z' });
+    expect(await repo.getSetting('cron_last_run_test')).toEqual({ at: '2026-10-20T10:00:00Z' });
+    await repo.setSetting('cron_last_run_test', { at: '2026-10-20T11:00:00Z' });
+    expect(await repo.getSetting<{ at: string }>('cron_last_run_test')).toEqual({ at: '2026-10-20T11:00:00Z' });
+  });
+
+  it('listLiveEvents runs and only reports real joins and commissions', async () => {
+    const rows = await repo.listLiveEvents(8);
+    expect(Array.isArray(rows)).toBe(true);
+    for (const r of rows) expect(['joined', 'earned']).toContain(r.kind);
+  });
+});

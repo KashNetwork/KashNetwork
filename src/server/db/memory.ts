@@ -16,6 +16,7 @@ import type {
   LeadStateRow,
   NewProfile,
   NotificationRow,
+  LiveEventRow,
   PaymentEventRow,
   PayoutRow,
   ProfileRow,
@@ -226,6 +227,24 @@ export class InMemoryRepo implements Repo {
     const sorted = [...this.tickets].sort((a, b) => b.created_at.localeCompare(a.created_at));
     const start = (params.page - 1) * params.pageSize;
     return { rows: sorted.slice(start, start + params.pageSize), total: sorted.length };
+  }
+
+  async listLiveEvents(limit: number) {
+    const out: LiveEventRow[] = [];
+    for (const p of this.profiles.values()) {
+      if (p.role === 'admin') continue;
+      const sub = [...this.subscriptions.values()]
+        .filter((s) => s.profile_id === p.id)
+        .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+      if (p.account_type === 'paid' && sub)
+        out.push({ id: 'j-' + p.id, kind: 'joined', full_name: p.full_name, email: p.email, amount_cents: 0, at: sub.created_at });
+    }
+    for (const c of this.commissions.values()) {
+      const p = this.profiles.get(c.affiliate_id);
+      if (!p || p.role === 'admin' || c.reversed_at) continue;
+      out.push({ id: 'c-' + c.id, kind: 'earned', full_name: p.full_name, email: p.email, amount_cents: c.amount_cents, at: c.created_at });
+    }
+    return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
   }
 
   async listNotifications(location: 'landing' | 'sales') {

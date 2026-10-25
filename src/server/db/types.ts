@@ -83,6 +83,16 @@ export interface SupportTicketRow {
   created_at: string;
 }
 
+/** A real event for the public social-proof popups. */
+export interface LiveEventRow {
+  id: string;
+  kind: 'joined' | 'earned';
+  full_name: string | null;
+  email: string;
+  amount_cents: number;
+  at: string;
+}
+
 export interface NotificationRow {
   id: string;
   location: 'landing' | 'sales' | 'both';

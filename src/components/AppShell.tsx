@@ -111,6 +111,8 @@ export function AppShell() {
   // set by the page Explodely sends buyers to after payment (/thanks → /app?welcome=purchase)
   const [justPurchased, setJustPurchased] = useState(false);
   const [waitedTooLong, setWaitedTooLong] = useState(false);
+  // after a short wait, point out the usual reason for a stuck screen: paid with a different email
+  const [showEmailHint, setShowEmailHint] = useState(false);
 
   useEffect(() => {
     if (!loading && !me) router.replace('/login');
@@ -132,10 +134,12 @@ export function AppShell() {
     document.addEventListener('visibilitychange', onBack);
     window.addEventListener('focus', onBack);
     // Explodely can take a couple of minutes to confirm a payment
+    const hint = setTimeout(() => setShowEmailHint(true), 20_000);
     const giveUp = setTimeout(() => setWaitedTooLong(true), 240_000);
     return () => {
       clearInterval(poll);
       clearTimeout(giveUp);
+      clearTimeout(hint);
       document.removeEventListener('visibilitychange', onBack);
       window.removeEventListener('focus', onBack);
     };
@@ -173,6 +177,21 @@ export function AppShell() {
               ? "This is taking longer than usual. Refresh in a minute, or check your email for your sign-in link."
               : 'This can take up to a couple of minutes. Keep this page open and you will land on your Buy Traffic tab.'}
           </p>
+          {showEmailHint && (
+            <div className="mt-5 rounded-xl bg-white p-4 text-left text-sm text-slate-600 ring-1 ring-slate-200">
+              <p>
+                You are signed in as <b>{me.email}</b>. If you paid with a <b>different email</b>, your new account is
+                under that one. Open the welcome email we sent it, or sign in with that email.
+              </p>
+              <button
+                type="button"
+                onClick={() => void logout().then(() => router.replace('/login'))}
+                className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white"
+              >
+                Sign in with the email I paid with
+              </button>
+            </div>
+          )}
           {waitedTooLong && (
             <button
               type="button"

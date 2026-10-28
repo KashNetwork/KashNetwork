@@ -125,10 +125,19 @@ export function AppShell() {
   useEffect(() => {
     if (!stillFree) return;
     const poll = setInterval(() => void refresh(), 2000);
-    const giveUp = setTimeout(() => setWaitedTooLong(true), 90_000);
+    // browsers slow background tabs right down: check again the moment the buyer comes back
+    const onBack = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    document.addEventListener('visibilitychange', onBack);
+    window.addEventListener('focus', onBack);
+    // Explodely can take a couple of minutes to confirm a payment
+    const giveUp = setTimeout(() => setWaitedTooLong(true), 240_000);
     return () => {
       clearInterval(poll);
       clearTimeout(giveUp);
+      document.removeEventListener('visibilitychange', onBack);
+      window.removeEventListener('focus', onBack);
     };
   }, [stillFree, refresh]);
 
@@ -162,7 +171,7 @@ export function AppShell() {
           <p className="mt-2 text-sm text-slate-500">
             {waitedTooLong
               ? "This is taking longer than usual. Refresh in a minute, or check your email for your sign-in link."
-              : 'This only takes a few seconds. You will land on your Buy Traffic tab.'}
+              : 'This can take up to a couple of minutes. Keep this page open and you will land on your Buy Traffic tab.'}
           </p>
           {waitedTooLong && (
             <button

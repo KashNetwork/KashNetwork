@@ -39,7 +39,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  me: () => req<{ me: Me }>('/me'),
+  me: () => req<{ me: Me }>('/me', { cache: 'no-store' }),
   submitLead: (email: string, ref?: string) =>
     req<{ me: Me; created: boolean }>('/leads', {
       method: 'POST',

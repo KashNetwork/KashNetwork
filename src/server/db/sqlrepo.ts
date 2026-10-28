@@ -269,13 +269,13 @@ export class SqlRepo implements Repo {
          select distinct on (p.id) 'j-' || p.id::text as id, 'joined' as kind, p.full_name, p.email::text as email,
                 0 as amount_cents, s.created_at::text as at
            from subscriptions s join profiles p on p.id = s.profile_id
-          where p.account_type = 'paid' and p.role <> 'admin'
+          where p.account_type = 'paid' and p.role <> 'admin' and p.email::text not like '%@kash.network'
           order by p.id, s.created_at
        ) j
        union all
        select 'c-' || c.id::text, 'earned', p.full_name, p.email::text, c.amount_cents, c.created_at::text
          from commissions c join profiles p on p.id = c.affiliate_id
-        where c.reversed_at is null and p.role <> 'admin'
+        where c.reversed_at is null and p.role <> 'admin' and p.email::text not like '%@kash.network'
        order by at desc limit $1`,
       [limit],
     );

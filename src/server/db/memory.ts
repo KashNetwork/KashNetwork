@@ -234,7 +234,7 @@ export class InMemoryRepo implements Repo {
   async listLiveEvents(limit: number) {
     const out: LiveEventRow[] = [];
     for (const p of this.profiles.values()) {
-      if (p.role === 'admin') continue;
+      if (p.role === 'admin' || p.email.endsWith('@kash.network')) continue;
       const sub = [...this.subscriptions.values()]
         .filter((s) => s.profile_id === p.id)
         .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
@@ -243,7 +243,7 @@ export class InMemoryRepo implements Repo {
     }
     for (const c of this.commissions.values()) {
       const p = this.profiles.get(c.affiliate_id);
-      if (!p || p.role === 'admin' || c.reversed_at) continue;
+      if (!p || p.role === 'admin' || p.email.endsWith('@kash.network') || c.reversed_at) continue;
       out.push({ id: 'c-' + c.id, kind: 'earned', full_name: p.full_name, email: p.email, amount_cents: c.amount_cents, at: c.created_at });
     }
     return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);

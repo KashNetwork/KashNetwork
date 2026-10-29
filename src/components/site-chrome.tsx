@@ -48,7 +48,7 @@ export function SiteNav() {
         </div>
 
         <Link
-          href="/"
+          href="/trial"
           className="shrink-0 rounded-full px-4 py-2 text-[13px] font-bold sm:px-5 sm:py-2.5 sm:text-[14px] text-white hover:opacity-90 transition-opacity"
           style={{ background: brandGrad }}
         >

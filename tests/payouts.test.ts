@@ -84,7 +84,7 @@ describe('affiliate payout requests', () => {
 
   it('rejects a request below the payout minimum', async () => {
     const aff = await makeAffiliate('aff2@gmail.com', 'AFF2');
-    await seedAvailableCommission(aff.id, 1000); // $10, min is $50
+    await seedAvailableCommission(aff.id, 1000); // $10, min is $30
     await issueSession(aff.id, 'user');
 
     const res = await myPayoutsPOST(
@@ -192,5 +192,22 @@ describe('admin payout approval', () => {
     const body = await res.json();
     expect(body.total).toBe(1);
     expect(body.rows[0].affiliateEmail).toBe('aff3@gmail.com');
+  });
+});
+
+describe('payout minimum is $30', () => {
+  it('accepts exactly $30 and rejects $29.99', async () => {
+    const under = await makeAffiliate('under@gmail.com', 'UNDR');
+    await seedAvailableCommission(under.id, 2999);
+    await issueSession(under.id, 'user');
+    const no = await myPayoutsPOST(json('/api/me/payouts', { method: 'paypal', methodDetails: 'under@paypal.com' }), noCtx);
+    expect(no.status).toBe(400);
+
+    cookieJar.clear();
+    const exact = await makeAffiliate('exact@gmail.com', 'EXCT');
+    await seedAvailableCommission(exact.id, 3000);
+    await issueSession(exact.id, 'user');
+    const yes = await myPayoutsPOST(json('/api/me/payouts', { method: 'paypal', methodDetails: 'exact@paypal.com' }), noCtx);
+    expect(yes.status).toBeLessThan(300);
   });
 });

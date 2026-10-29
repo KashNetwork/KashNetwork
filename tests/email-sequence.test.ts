@@ -119,7 +119,8 @@ describe('lead nurture sequence — sending (force: true bypasses the real-sendi
     expect(messages[0]!.direction).toBe('outbound');
     expect(messages[0]!.subject).toBe(FREE_NURTURE_SEQUENCE[0]!.subject);
     expect(messages[0]!.body_text).not.toContain('{{affiliate_link}}');
-    expect(messages[0]!.body_text).toContain('/activate?ref=');
+    expect(messages[0]!.body_text).toContain('/api/auth/lead?t=');
+    expect(messages[0]!.body_text).toContain('ref=');
   });
 
   it("uses the credited affiliate's link, not admin's, when one is on file", async () => {
@@ -166,7 +167,8 @@ describe('lead nurture sequence — sending (force: true bypasses the real-sendi
     }
     const state = await repo.getLeadStateByProfile(p.id);
     expect(state?.sequence_status).toBe('completed');
-    expect(await repo.listEmailMessagesByProfile(p.id)).toHaveLength(FREE_NURTURE_SEQUENCE.length);
+    // held emails are skipped, so only the sendable ones go out
+    expect(await repo.listEmailMessagesByProfile(p.id)).toHaveLength(FREE_NURTURE_SEQUENCE.filter((s) => !s.hold).length);
   });
 
   it('is wired into the cron endpoint (gated off here since RESEND_API_KEY is unset in tests)', async () => {

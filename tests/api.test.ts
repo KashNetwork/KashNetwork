@@ -161,3 +161,25 @@ describe('admin', () => {
     expect(repo.audits.at(-1)?.action).toBe('user.status_override');
   });
 });
+
+describe('placeholder / shared-inbox emails are rejected without Kickbox', () => {
+  const bad = [
+    'test@mail.com', 'Test@gmail.com', 'test1@gmail.com', 'demo@gmail.com', 'fake@yahoo.com',
+    'asdf@gmail.com', 'qwerty123@gmail.com', 'aaaa@gmail.com', '123456@gmail.com',
+    'anyone@example.com', 'info@kash.network', 'support@gmail.com', 'test+promo@gmail.com',
+  ];
+  for (const email of bad) {
+    it(`rejects ${email}`, async () => {
+      const res = await leadsPOST(json('/api/leads', { email }), noCtx);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('invalid_email');
+    });
+  }
+
+  it('still accepts real-looking addresses, including plus-addresses', async () => {
+    for (const email of ['adelusidankunle+kash1@gmail.com', 'test1.kash@gmail.com', 'jane.doe@gmail.com', 'tobi.olu@gmail.com']) {
+      const res = await leadsPOST(json('/api/leads', { email }), noCtx);
+      expect(res.status, email).toBeLessThan(300);
+    }
+  });
+});

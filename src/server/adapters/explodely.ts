@@ -95,8 +95,15 @@ export class ExplodelyProvider implements PaymentProvider {
       headers: { 'user-agent': 'Mozilla/5.0 (compatible; KashNetwork/1.0; +https://kash.network)', accept: 'application/json' },
       signal: AbortSignal.timeout(20_000),
     });
-    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    if (!res.ok) throw new Error(`explodely cancelrebill: HTTP ${res.status}`);
+    const text = await res.text();
+    let body: Record<string, unknown> = {};
+    try {
+      body = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      /* not JSON (for example a Cloudflare page): keep the start of it for the error */
+    }
+    const snippet = text.replace(/\s+/g, ' ').slice(0, 200);
+    if (!res.ok) throw new Error(`explodely cancelrebill: HTTP ${res.status} ${snippet}`);
     if (body.error) throw new Error(`explodely cancelrebill: ${String(body.error)}`);
   }
 }

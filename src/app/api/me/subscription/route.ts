@@ -28,6 +28,14 @@ export const POST = route(async (req) => {
       } catch (e) {
         // never show "cancelled" while the provider would keep billing the card
         console.warn('[subscription] provider cancel failed', (e as Error).message);
+        // keep the exact reason where the admin can read it (app_settings → cancel_last_error)
+        await db
+          .setSetting('cancel_last_error', {
+            at: new Date().toISOString(),
+            externalSubId: sub.external_sub_id,
+            message: (e as Error).message.slice(0, 400),
+          })
+          .catch(() => undefined);
         throw new ApiError(
           502,
           'provider_cancel_failed',

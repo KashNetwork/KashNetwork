@@ -22,8 +22,8 @@ export const config = {
   },
 
   explodely: {
-    username: env.EXPLODELY_USERNAME ?? '',
-    apiKey: env.EXPLODELY_API_KEY ?? '',
+    username: (env.EXPLODELY_USERNAME ?? '').trim(),
+    apiKey: (env.EXPLODELY_API_KEY ?? '').trim(),
     // secret token appended to the IPN URL (Explodely doesn't sign IPNs)
     ipnSecret: env.EXPLODELY_IPN_SECRET ?? '',
     productId: env.EXPLODELY_PRODUCT_ID ?? '',

@@ -262,7 +262,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "Email: support@kash.network"
+        "x": "Email: support@app.kash.network"
       },
       {
         "t": "p",
@@ -293,7 +293,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "Email: support@kash.network"
+        "x": "Email: support@app.kash.network"
       },
       {
         "t": "li",
@@ -508,7 +508,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "support@kash.network"
+        "x": "support@app.kash.network"
       }
     ]
   },
@@ -607,7 +607,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "Email: support@kash.network"
+        "x": "Email: support@app.kash.network"
       },
       {
         "t": "h2",
@@ -954,7 +954,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "By email: ⦁ support@kash.network"
+        "x": "By email: ⦁ support@app.kash.network"
       },
       {
         "t": "h2",
@@ -990,7 +990,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "Via email at: support@kash.network"
+        "x": "Via email at: support@app.kash.network"
       },
       {
         "t": "li",
@@ -1081,7 +1081,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You will not initiate a chargeback, dispute, or payment reversal with your bank or payment processor without first contacting our support team at support@kash.network"
+        "x": "You will not initiate a chargeback, dispute, or payment reversal with your bank or payment processor without first contacting our support team at support@app.kash.network"
       },
       {
         "t": "p",
@@ -1149,7 +1149,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "Requests must be sent to support@kash.network"
+        "x": "Requests must be sent to support@app.kash.network"
       },
       {
         "t": "p",
@@ -1185,7 +1185,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "Email: support@kash.network"
+        "x": "Email: support@app.kash.network"
       }
     ]
   },
@@ -1424,7 +1424,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "You will not initiate a chargeback, dispute, or payment reversal with your bank or payment processor without first contacting our support team at support@kash.network to attempt resolution."
+        "x": "You will not initiate a chargeback, dispute, or payment reversal with your bank or payment processor without first contacting our support team at support@app.kash.network to attempt resolution."
       },
       {
         "t": "p",
@@ -1624,7 +1624,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "p",
-        "x": "We welcome your feedback on the accessibility of Kash Network LLC. Please let us know if you encounter accessibility barriers on Kash Network LLC by contacting: support@kash.network"
+        "x": "We welcome your feedback on the accessibility of Kash Network LLC. Please let us know if you encounter accessibility barriers on Kash Network LLC by contacting: support@app.kash.network"
       },
       {
         "t": "h2",
@@ -1936,7 +1936,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         "t": "li",
-        "x": "Email: support@kash.network"
+        "x": "Email: support@app.kash.network"
       },
       {
         "t": "li",

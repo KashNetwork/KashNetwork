@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const r = await run(req);
   return r.ok
     ? page("You're unsubscribed", "You won't get any more emails from us. Sorry to see you go.")
-    : page('Link not valid', 'This unsubscribe link is invalid or has expired. Email support@kash.network and we will remove you.', 400);
+    : page('Link not valid', 'This unsubscribe link is invalid or has expired. Email support@app.kash.network and we will remove you.', 400);
 }
 
 /** POST = Gmail/Apple one-click unsubscribe (List-Unsubscribe-Post). */

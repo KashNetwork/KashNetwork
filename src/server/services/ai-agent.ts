@@ -22,6 +22,9 @@ export type InboundResult =
   | { action: 'replied'; messageId: string };
 
 // Topics the agent never answers on its own — money, legal, anger. A person does.
+/** The AI ends its reply with this when a real person has to take over; it is removed before sending. */
+const HUMAN_TOKEN = '[[HUMAN]]';
+const HUMAN_RULE = `- If the request needs a real person (an account-specific problem, anything you cannot answer from the facts above, or the person asks for a human), say a team member will follow up and end your reply with ${HUMAN_TOKEN} on its own last line.`;
 const ESCALATE = /\b(refund|chargeback|dispute|charged|charge me|billing|lawyer|attorney|legal|sue|scam|fraud|report you|ftc|complain)\b/i;
 const UNSUBSCRIBE = /\b(unsubscribe|stop (?:emailing|sending|contacting)|remove me|do not contact|don'?t contact|take me off)\b/i;
 const AUTO_SENDER = /(mailer-daemon|postmaster|no-?reply|do-?not-?reply|bounce)/i;
@@ -64,6 +67,7 @@ function supportReplySystem(first: boolean): string {
     '- Never promise income or results. Never state anything about refunds or billing disputes beyond: the team will follow up.',
     '- The trial is NOT free: it costs $1 for 7 days. Never state any other price, trial length or discount.',
     '- If you are not sure of an answer, say the team will follow up within one business day.',
+    HUMAN_RULE,
     first
       ? '- Do not greet or introduce yourself: an introduction is added above your text automatically. Start directly with the answer.'
       : '- You have already introduced yourself earlier in this conversation. Do not introduce yourself again; start directly with the answer.',
@@ -108,7 +112,7 @@ async function escalate(
   try {
     await getEmailProvider().send({
       from: config.resend.fromSupport,
-      to: config.resend.supportInbox,
+      to: config.resend.escalationInbox,
       replyTo: fromEmail,
       subject: `[Needs a person: ${reason}] ${mail.subject || 'New email'} — ${fromEmail}`,
       text: stripQuotedReply(mail.text),
@@ -150,6 +154,7 @@ export async function handleInboundEmail(repo: Repo, mail: InboundEmail): Promis
     config.resend.replyHarley,
     config.resend.replySupport,
     config.resend.supportInbox,
+    config.resend.escalationInbox,
   ].map(extractAddress);
   if (!fromEmail || AUTO_SENDER.test(fromEmail) || ownAddresses.includes(fromEmail) || AUTO_SUBJECT.test(mail.subject.trim())) {
     return { action: 'ignored', reason: 'automatic or own message' };
@@ -211,6 +216,7 @@ export async function handleInboundEmail(repo: Repo, mail: InboundEmail): Promis
 
   const link = await affiliateLinkFor(repo, profile);
   let replyText: string;
+  let needsHuman = false;
   try {
     const past = profile ? await repo.listEmailMessagesByProfile(profile.id, 12) : [];
     const chronological = [...past].reverse().filter((m) => m.body_text);
@@ -259,6 +265,8 @@ export async function handleInboundEmail(repo: Repo, mail: InboundEmail): Promis
     aiGenerated: true,
   });
   if (profile) await repo.recordAiReply(profile.id);
+  // the person who wrote in got their answer; a real person also gets the request
+  if (needsHuman) await escalate(repo, mail, fromEmail, profile, 'the assistant asked for a person');
   return { action: 'replied', messageId: stored.id };
 }
 

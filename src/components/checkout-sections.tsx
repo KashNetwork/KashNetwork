@@ -476,8 +476,8 @@ export function CheckoutFooter({ variant = "tinted" }: { variant?: "tinted" | "p
               <div className="mt-4 space-y-2" style={{ color: navySub }}>
                 <div className="flex items-center justify-center gap-2 md:justify-start">
                   <Mail className="h-3.5 w-3.5 shrink-0" />
-                  <a href="mailto:support@kash.network" className="break-all hover:opacity-70">
-                    support@kash.network
+                  <a href="mailto:support@app.kash.network" className="break-all hover:opacity-70">
+                    support@app.kash.network
                   </a>
                 </div>
                 <div className="flex items-center justify-center gap-2 md:justify-start">
@@ -527,7 +527,7 @@ export function CheckoutFooter({ variant = "tinted" }: { variant?: "tinted" | "p
               { label: "Disclaimer", href: "/disclaimer" },
               { label: "Billing Support", href: EXPLODELY_BILLING_SUPPORT },
               { label: "Contact", href: "/contact" },
-              { label: "support@kash.network", href: "mailto:support@kash.network" },
+              { label: "support@app.kash.network", href: "mailto:support@app.kash.network" },
             ].map((l) => (
               <a
                 key={l.label}

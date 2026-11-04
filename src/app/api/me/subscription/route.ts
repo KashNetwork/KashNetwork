@@ -39,7 +39,7 @@ export const POST = route(async (req) => {
         throw new ApiError(
           502,
           'provider_cancel_failed',
-          'We could not cancel with the payment provider. Please try again in a few minutes, or email support@kash.network and we will cancel it for you.',
+          'We could not cancel with the payment provider. Please try again in a few minutes, or email support@app.kash.network and we will cancel it for you.',
         );
       }
     }

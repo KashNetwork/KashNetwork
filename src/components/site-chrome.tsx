@@ -110,7 +110,7 @@ export function SiteFooter() {
               <ul className="space-y-[9px]" style={{ color: bodyText }}>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">
                   <Mail className="h-4 w-4 shrink-0" style={{ color: softText }} />
-                  <a href="mailto:support@kash.network" target="_blank" rel="noopener noreferrer" className="break-all hover:opacity-70">support@kash.network</a>
+                  <a href="mailto:support@app.kash.network" target="_blank" rel="noopener noreferrer" className="break-all hover:opacity-70">support@app.kash.network</a>
                 </li>
                 <li className="flex items-center gap-2.5 justify-center sm:justify-start">
                   <Globe className="h-4 w-4 shrink-0" style={{ color: softText }} />

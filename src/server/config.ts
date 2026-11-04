@@ -39,6 +39,8 @@ export const config = {
     fromSupport: env.EMAIL_FROM_SUPPORT ?? 'Kash Support <support@app.kash.network>',
     // where the support form + admin alerts are delivered (a real inbox)
     supportInbox: env.SUPPORT_INBOX ?? 'support@app.kash.network',
+    // a real person reads this one: the AI hands requests it cannot finish to it
+    escalationInbox: (env.SUPPORT_ESCALATION_INBOX ?? 'support@kash.network').trim(),
     // where replies to our emails go: an address Resend receives mail on, so the AI agent sees them
     replyHarley: env.EMAIL_REPLY_HARLEY ?? 'harley@app.kash.network',
     replySupport: env.EMAIL_REPLY_SUPPORT ?? 'support@app.kash.network',

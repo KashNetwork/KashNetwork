@@ -29,6 +29,6 @@ export const DISCLAIMER_DOC: LegalDoc = {
       x: 'Payments are processed by a third-party payment gateway and some features rely on other third-party services. We are not responsible for the availability, content or policies of third-party services, and your use of them is at your own risk.',
     },
     { t: 'h2', x: '5. Contact' },
-    { t: 'p', x: 'Questions about this Disclaimer can be sent to support@kash.network.' },
+    { t: 'p', x: 'Questions about this Disclaimer can be sent to support@app.kash.network.' },
   ],
 };

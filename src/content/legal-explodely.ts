@@ -238,7 +238,7 @@ export const EXPLODELY_REFUND_DOC: LegalDoc = {
     },
     {
       "t": "li",
-      "x": "By email: support@kash.network"
+      "x": "By email: support@app.kash.network"
     },
     {
       "t": "li",

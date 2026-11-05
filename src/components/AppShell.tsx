@@ -145,6 +145,13 @@ export function AppShell() {
     };
   }, [stillFree, refresh]);
 
+  // buttons inside a panel (admin quick actions) can ask the shell to open another tab
+  useEffect(() => {
+    const go = (e: Event) => setActive((e as CustomEvent<string>).detail as TabKey);
+    window.addEventListener('kash:tab', go);
+    return () => window.removeEventListener('kash:tab', go);
+  }, []);
+
   // as soon as it is paid, open the new Buy Traffic tab and tidy the address bar
   const paidNow = justPurchased && me?.accountType === 'paid';
   useEffect(() => {

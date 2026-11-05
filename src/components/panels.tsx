@@ -58,7 +58,6 @@ export type TabKey =
   | 'payouts'
   | 'admin';
 
-const SOON_M4 = 'Live in Milestone 4';
 
 const ACTIVITY_NAMES: Record<string, string> = {
   trial_started: 'New $1 Trial Paid Member',
@@ -775,12 +774,38 @@ function AdminDashboard() {
           )}
         </Panel>
         <Panel title="Quick actions" bodyClassName="p-0">
-          <EmptyState
-            icon={ShieldCheck}
-            title="Controls coming"
-            hint="Approve payouts, override account status, reassign referrals."
-            soon={SOON_M4}
-          />
+          <div className="grid gap-2 p-5 sm:grid-cols-2">
+            {[
+              { tab: 'payouts', label: 'Approve payouts', hint: 'Cashout requests waiting for you' },
+              { tab: 'customers', label: 'Manage members', hint: 'Override status, move a member to another affiliate' },
+              { tab: 'admin', label: 'Safeguard flags', hint: 'Self-referrals, duplicates, chargebacks to review' },
+              { tab: 'support', label: 'Support tickets', hint: 'Everything the assistant escalated' },
+            ].map((a) => (
+              <button
+                key={a.tab}
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('kash:tab', { detail: a.tab }))}
+                className="rounded-xl bg-white p-4 text-left ring-1 ring-slate-200 transition hover:bg-slate-50"
+              >
+                <div className="text-sm font-semibold text-slate-900">{a.label}</div>
+                <div className="mt-0.5 text-xs text-slate-500">{a.hint}</div>
+              </button>
+            ))}
+            <a
+              href="/api/admin/export?type=users"
+              className="rounded-xl bg-white p-4 text-left no-underline ring-1 ring-slate-200 transition hover:bg-slate-50"
+            >
+              <div className="text-sm font-semibold text-slate-900">Export members (CSV)</div>
+              <div className="mt-0.5 text-xs text-slate-500">Download every account</div>
+            </a>
+            <a
+              href="/api/admin/export?type=payouts"
+              className="rounded-xl bg-white p-4 text-left no-underline ring-1 ring-slate-200 transition hover:bg-slate-50"
+            >
+              <div className="text-sm font-semibold text-slate-900">Export payouts (CSV)</div>
+              <div className="mt-0.5 text-xs text-slate-500">For batch PayPal or bank payments</div>
+            </a>
+          </div>
         </Panel>
       </div>
     </div>

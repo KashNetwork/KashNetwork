@@ -64,7 +64,10 @@ export default function Confirm({ initialRef }: { initialRef?: string }) {
           aria-modal="true"
         >
           <form onSubmit={submit} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="font-display text-2xl font-extrabold" style={{ color: navy }}>
+            <h2
+              className="whitespace-nowrap text-center font-display font-extrabold"
+              style={{ color: navy, fontSize: 'clamp(15px, 4.8vw, 24px)' }}
+            >
               Enter Your Email To Get Started
             </h2>
             <div className="relative mt-5">

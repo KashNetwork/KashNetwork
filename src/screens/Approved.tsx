@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 
 const navy = '#04184E';
@@ -12,8 +12,10 @@ export default function Approved() {
   const router = useRouter();
   const { me, loading } = useAuth();
   const [salesHref, setSalesHref] = useState<string | null>(null);
+  const decided = useRef(false);
 
   useEffect(() => {
+    if (decided.current) return;
     const ref = new URLSearchParams(window.location.search).get('ref');
     const sales = `/activate${ref ? `?ref=${encodeURIComponent(ref)}` : ''}`;
     if (loading) return;
@@ -22,6 +24,7 @@ export default function Approved() {
       router.replace(`/confirm${ref ? `?ref=${encodeURIComponent(ref)}` : ''}`);
       return;
     }
+    decided.current = true; // decide once per visit: a re-render must never count as a second visit
     let seen = false;
     try {
       seen = localStorage.getItem(SEEN_KEY) === me.id;

@@ -95,7 +95,7 @@ describe('auth + tabs', () => {
       'profile',
       'cancel_subscription',
     ]);
-    expect(me1.affiliate.links.landing).toContain('/trial?ref=PAIDX');
+    expect(me1.affiliate.links.landing).toContain('/confirm?ref=PAIDX');
 
     const me = await meGET(json('/api/me', undefined, 'GET'), noCtx);
     expect(me.status).toBe(200);

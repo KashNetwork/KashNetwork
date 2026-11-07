@@ -32,7 +32,7 @@ export interface MeResponse {
 export function affiliateLinks(code: string) {
   const base = config.publicSiteUrl.replace(/\/$/, '');
   return {
-    landing: `${base}/trial?ref=${encodeURIComponent(code)}`,
+    landing: `${base}/confirm?ref=${encodeURIComponent(code)}`,
     sales: `${base}/activate?ref=${encodeURIComponent(code)}`,
     checkout: `${base}/secure-checkout?ref=${encodeURIComponent(code)}`,
   };

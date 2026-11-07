@@ -58,7 +58,7 @@ export const DEFAULTS = {
 
 // funnel paths
 export const FUNNEL_PATH: Record<ClickLinkKind, string> = {
-  landing: '/trial',
+  landing: '/confirm',
   sales: '/activate',
   checkout: '/secure-checkout',
 };

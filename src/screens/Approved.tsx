@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CheckoutFooter } from '@/components/checkout-sections';
 import { useAuth } from '@/lib/auth';
 
 const navy = '#04184E';
@@ -57,7 +56,6 @@ export default function Approved() {
           Watch Now
         </a>
       </main>
-      <CheckoutFooter variant="plain" />
     </div>
   );
 }

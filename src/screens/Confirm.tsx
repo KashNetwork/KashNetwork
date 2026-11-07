@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { CheckoutFooter } from '@/components/checkout-sections';
 import { LiveNotifications } from '@/components/LiveNotifications';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -56,7 +55,6 @@ export default function Confirm({ initialRef }: { initialRef?: string }) {
         <p className="mt-5 text-[15px] text-slate-500">You’re one click away from generating your FIRST paycheck online…</p>
       </main>
 
-      <CheckoutFooter variant="plain" />
       <LiveNotifications location="landing" />
 
       {open && (
@@ -64,27 +62,39 @@ export default function Confirm({ initialRef }: { initialRef?: string }) {
           className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4"
           role="dialog"
           aria-modal="true"
-          onClick={(e) => e.target === e.currentTarget && !busy && setOpen(false)}
         >
           <form onSubmit={submit} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
             <h2 className="font-display text-2xl font-extrabold" style={{ color: navy }}>
-              Where should we send your access?
+              Enter Your Email To Get Started
             </h2>
-            <label htmlFor="confirm-email" className="mt-5 block text-sm font-semibold text-slate-700">
-              Email address
-            </label>
-            <input
-              id="confirm-email"
-              type="email"
-              required
-              autoFocus
-              autoComplete="email"
-              inputMode="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1.5 h-12 w-full rounded-xl border border-slate-300 px-4 text-base outline-none focus:border-[#4FD41B] focus:ring-2 focus:ring-[#4FD41B]/30"
-            />
+            <div className="relative mt-5">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              <input
+                id="confirm-email"
+                type="email"
+                required
+                autoFocus
+                autoComplete="email"
+                inputMode="email"
+                aria-label="Email address"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 w-full rounded-xl border border-slate-300 pl-12 pr-4 text-base outline-none focus:border-[#4FD41B] focus:ring-2 focus:ring-[#4FD41B]/30"
+              />
+            </div>
             {error && <p className="mt-3 text-sm font-medium text-rose-600">{error}</p>}
             <button
               type="submit"
@@ -92,16 +102,9 @@ export default function Confirm({ initialRef }: { initialRef?: string }) {
               className="mt-5 w-full rounded-full px-6 py-3.5 font-display text-lg font-extrabold disabled:opacity-60"
               style={{ background: greenBtn, color: navy }}
             >
-              {busy ? 'Confirming…' : 'Confirm My Spot'}
+              {busy ? 'Activating…' : 'Activate My Commissions'}
             </button>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              disabled={busy}
-              className="mt-3 w-full text-center text-sm text-slate-500 hover:underline"
-            >
-              Cancel
-            </button>
+            <p className="mt-3 text-center text-sm text-slate-500">✦ Your bonuses will be sent to the email above.</p>
           </form>
         </div>
       )}

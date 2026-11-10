@@ -752,7 +752,7 @@ function AdminDashboard() {
           hint="estimated, this month"
         />
         <StatCard label="Active paid members" value={n(data?.activePaidMembers)} icon={Users} />
-        <StatCard label="Free leads" value={n(data?.freeLeads)} icon={MousePointerClick} />
+        <StatCard label="Active free members" value={n(data?.freeLeads)} icon={MousePointerClick} />
         <StatCard label="Pending payouts" value={data ? money(data.pendingPayoutsCents) : '—'} icon={Wallet} />
       </div>
 

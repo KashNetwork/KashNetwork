@@ -71,7 +71,7 @@ const ACTIVITY_NAMES: Record<string, string> = {
   reactivated: 'Reactivated',
 };
 function ACTIVITY_LABEL(a: { kind: string; detail: string }) {
-  if (a.kind === 'signup') return a.detail === 'paid' ? 'New Free Member' : 'New Lead';
+  if (a.kind === 'signup') return a.detail === 'paid' ? 'New Paid Member' : 'New Free Member';
   return ACTIVITY_NAMES[a.detail] ?? a.detail;
 }
 
@@ -172,12 +172,19 @@ function DashboardPanel() {
         <StatCard label="Pending" value={m(s?.pendingCents)} icon={Clock} hint="in 30-day hold" />
       </div>
 
-      <Panel title="Your referral link">
+      <Panel title="Your referral links">
         {me?.affiliate ? (
-          <div className="space-y-2">
-            <CopyRow value={me.affiliate.links.landing} />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Landing Page</p>
+              <CopyRow value={me.affiliate.links.landing} />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Sales Page</p>
+              <CopyRow value={me.affiliate.links.sales} />
+            </div>
             <p className="text-xs text-slate-400">
-              Share this link. It points to the landing page and tracks for 30 days (last click wins).
+              Share either link. Both track for 30 days (last click wins).
             </p>
           </div>
         ) : (

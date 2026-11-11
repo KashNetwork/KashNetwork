@@ -240,6 +240,8 @@ export class InMemoryRepo implements Repo {
         .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
       if (p.account_type === 'paid' && sub)
         out.push({ id: 'j-' + p.id, kind: 'joined', full_name: p.full_name, email: p.email, amount_cents: 0, at: sub.created_at });
+      else if (p.account_type === 'free')
+        out.push({ id: 'f-' + p.id, kind: 'joined', full_name: p.full_name, email: p.email, amount_cents: 0, at: p.created_at });
     }
     for (const c of this.commissions.values()) {
       const p = this.profiles.get(c.affiliate_id);

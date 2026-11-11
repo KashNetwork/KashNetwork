@@ -273,6 +273,10 @@ export class SqlRepo implements Repo {
           order by p.id, s.created_at
        ) j
        union all
+       select 'f-' || p.id::text, 'joined', p.full_name, p.email::text, 0, p.created_at::text
+         from profiles p
+        where p.account_type = 'free' and p.role <> 'admin' and p.email::text not like '%@kash.network'
+       union all
        select 'c-' || c.id::text, 'earned', p.full_name, p.email::text, c.amount_cents, c.created_at::text
          from commissions c join profiles p on p.id = c.affiliate_id
         where c.reversed_at is null and p.role <> 'admin' and p.email::text not like '%@kash.network'
